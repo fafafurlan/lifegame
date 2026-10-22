@@ -146,8 +146,6 @@ const EVENTOS = [
       { t: 'Assinar o contrato', fx: s => { setFlag('gravadora'); s.seguidores = Math.round(s.seguidores * 3); grana(80000); marco('Contrato assinado', 'Sua banda agora tem gravadora e música tocando no rádio.'); } },
       { t: 'Continuar independente', fx: () => line('Vocês preferiram continuar independentes.') }
     ] },
-  { id: 'carteiraMotorista', cat: 'vida', min: 18, max: 25, once: true,
-    fx: () => { grana(-3000); if (chance(.7)) line('Você passou na prova da autoescola e tirou a carteira de motorista.', 'good'); else { mod('felicidade', -3); line('Você reprovou na baliza da autoescola.', 'bad'); } } },
 
   // ---------- amizade e amor ----------
   { id: 'amigo', cat: 'familia', min: 6, max: 70, gap: 4,
@@ -214,9 +212,9 @@ const EVENTOS = [
 
   // ---------- família ----------
   { id: 'cachorro', cat: 'familia', min: 5, max: 85, cond: () => !achar('pet'),
-    texto: () => 'Um cachorro caramelo apareceu na sua porta, magrinho e abanando o rabo.',
+    texto: () => 'Um vira-lata caramelo apareceu na sua porta, magrinho e abanando o rabo.',
     escolhas: [
-      { t: 'Adotar', fx: s => { const p = pessoa('pet', 'M', R(1, 4)); s.rel.push(p); setFlag('tutor'); mod('felicidade', R(6, 10)); line(`Você adotou o cachorro e deu o nome de ${p.nome}.`, 'good'); } },
+      { t: 'Adotar', fx: s => { const p = bicho('vira'); p.idade = R(1, 4); s.rel.push(p); setFlag('tutor'); mod('felicidade', R(6, 10)); line(`Você adotou o cachorro e deu o nome de ${p.nome}.`, 'good'); } },
       { t: 'Levar a um abrigo', fx: () => { mod('felicidade', 2); line('Você levou o cachorro a um abrigo.'); } },
       { t: 'Fechar a porta', fx: () => { mod('felicidade', -3); line('Você fechou a porta. O cachorro foi embora.'); } }
     ] },
@@ -438,17 +436,17 @@ const EVENTOS = [
       { t: 'Reclamar com o síndico', fx: () => { mod('felicidade', 2); line('O síndico deu uma multa no vizinho.'); } },
       { t: () => 'Aguentar calad' + G('o', 'a'), fx: () => { mod('felicidade', -3); mod('saude', -2); line('Você passou meses dormindo mal.', 'bad'); } }
     ] },
-  { id: 'viagem', cat: 'vida', min: 20, max: 80, gap: 3, cond: s => s.dinheiro > 900, prep: () => ({ dest: pick(DESTINOS) }),
+  { id: 'viagem', cat: 'vida', min: 20, max: 80, gap: 3, cond: s => s.dinheiro > 900, prep: () => ({ dest: pick(DESTINOS.nacional)[0] }),
     texto: (s, d) => `Apareceu uma passagem em promoção para ${d.dest} por ${fmt(900)}.`,
     escolhas: [
       { t: 'Comprar e viajar', fx: (s, d) => { grana(-900); mod('felicidade', R(7, 12)); line(`Você viajou para ${d.dest}. Que viagem!`, 'good'); } },
       { t: 'Deixar passar', fx: () => line('Você deixou a promoção passar.') }
     ] },
   { id: 'mudarCidade', cat: 'vida', min: 20, max: 60, once: true, p: .5, cond: s => s.pais === 'Brasil',
-    prep: s => ({ c: pick(CIDADES.filter(c => c !== s.cidade)) }),
+    prep: s => { const uf = pick(Object.keys(ESTADOS).filter(u => u !== s.uf)); return { uf, c: pick(ESTADOS[uf].cidades) }; },
     texto: (s, d) => `Você recebeu um convite para se mudar para ${d.c}.`,
     escolhas: [
-      { t: 'Fazer as malas', fx: (s, d) => { s.cidade = d.c; mod('felicidade', 4); line(`Você se mudou para ${d.c}.`, 'good'); } },
+      { t: 'Fazer as malas', fx: (s, d) => { s.cidade = d.c; s.uf = d.uf; mod('felicidade', 4); line(`Você se mudou para ${d.c}.`, 'good'); } },
       { t: 'Ficar onde está', fx: s => line(`Você preferiu continuar em ${s.cidade}.`) }
     ] },
   { id: 'eleicao', cat: 'vida', min: 16, max: 110, gap: 4,
@@ -477,5 +475,146 @@ const EVENTOS = [
       { t: 'Desistir', fx: () => line('Você disse que prefere ir à agência.') }
     ] },
   { id: 'memorias', cat: 'familia', min: 75, max: 110, once: true,
-    fx: () => { mod('felicidade', 6); line('Você passou a tarde mostrando fotos antigas para a família.', 'good'); } }
+    fx: () => { mod('felicidade', 6); line('Você passou a tarde mostrando fotos antigas para a família.', 'good'); } },
+  // ---------- Brasil de todo dia ----------
+  { id: 'festaJunina', cat: 'escola', min: 6, max: 14, gap: 2, cond: s => !!s.escola,
+    texto: () => 'Festa junina na escola! Você vai...',
+    escolhas: [
+      { t: 'Dançar quadrilha', fx: () => { mod('felicidade', 4); popular(3); line('Você dançou quadrilha de chapéu de palha e bigode pintado.', 'good'); } },
+      { t: 'Ficar na barraca da pescaria', fx: () => { mod('felicidade', 2); line('Você pescou três prendas na barraca da pescaria.'); } },
+      { t: 'Comer canjica até passar mal', fx: () => { mod('felicidade', 3); mod('saude', -2); line('Você comeu canjica, pamonha e quentão de criança até passar mal.'); } }
+    ] },
+  { id: 'natalTio', cat: 'familia', min: 5, max: 90, gap: 3,
+    texto: () => 'Ceia de Natal na casa da vó. O tio do pavê ataca: "É pavê ou pacomê?"',
+    escolhas: [
+      { t: 'Rir por educação', fx: s => { const t = achar('tio'); if (t) t.rel = clamp(t.rel + 6); line('Você riu da piada do pavê pela décima vez.'); } },
+      { t: 'Revirar os olhos', fx: s => { const t = achar('tio'); if (t) t.rel = clamp(t.rel - 4); line('Seu tio ficou chateado com a falta de humor.'); } },
+      { t: 'Devolver com outra piada ruim', fx: () => { mod('felicidade', 3); line('Você respondeu com a do "pá de cal" e a mesa inteira gemeu.', 'good'); } }
+    ] },
+  { id: 'almocoVo', cat: 'familia', min: 6, max: 45, gap: 3, cond: () => !!achar('avo'),
+    prep: () => ({ id: achar('avo').id }),
+    texto: (s, d) => `Almoço de domingo na casa de ${s.rel.find(r => r.id === d.id).nome}. Ela insiste para você repetir o prato.`,
+    escolhas: [
+      { t: 'Repetir duas vezes', fx: (s, d) => { const a = s.rel.find(r => r.id === d.id); a.rel = clamp(a.rel + 8); mod('felicidade', 3); mod('saude', -1); line(`Você repetiu a lasanha de ${a.nome} duas vezes.`, 'good'); } },
+      { t: 'Dizer que está de dieta', fx: (s, d) => { const a = s.rel.find(r => r.id === d.id); a.rel = clamp(a.rel - 4); line(`${a.nome} disse que você está magr${G('o', 'a')} demais.`); } }
+    ] },
+  { id: 'carnaval', cat: 'vida', min: 16, max: 75, gap: 3,
+    texto: () => 'Chegou o Carnaval. Qual vai ser?',
+    escolhas: [
+      { t: () => `Desfilar numa escola de samba (${fmt(1500)} a fantasia)`, fx: () => { grana(-1500); mod('felicidade', 10); if (chance(.2)) conhecerAlguem('no desfile da escola de samba'); else line('Você desfilou na avenida e cantou o samba-enredo inteiro.', 'good'); } },
+      { t: 'Bloquinho de rua', fx: () => { mod('felicidade', 6); mod('saude', -2); if (chance(.2)) conhecerAlguem('num bloquinho'); else line('Você pulou bloquinho de glitter até a Quarta-feira de Cinzas.'); } },
+      { t: 'Descansar longe da folia', fx: () => { mod('felicidade', 3); mod('saude', 2); line('Você aproveitou o feriado para descansar.'); } }
+    ] },
+  { id: 'reveillon', cat: 'vida', min: 12, max: 95, gap: 4,
+    texto: () => 'Réveillon chegando. Vai pular as sete ondas de branco?',
+    escolhas: [
+      { t: 'Pular as sete ondas', fx: () => { mod('felicidade', 4); line('Você pulou sete ondas, fez sete pedidos e comeu lentilha.'); } },
+      { t: 'Ver os fogos pela TV', fx: () => line('Você virou o ano no sofá, vendo os fogos pela TV.') }
+    ] },
+  { id: 'faltaLuz', cat: 'vida', min: 3, max: 100, gap: 6,
+    fx: () => { mod('felicidade', 1); line('Faltou luz no bairro a noite toda. Teve roda de violão na calçada.'); } },
+  { id: 'dengue', cat: 'saude', min: 3, max: 100, gap: 8, p: .4, fx: () => adoecer('Dengue') },
+  { id: 'calor', cat: 'vida', min: 3, max: 100, gap: 5,
+    fx: () => { mod('felicidade', -2); line('Fez 41 graus e o ventilador quebrou no mesmo dia.', 'bad'); } },
+  { id: 'grupoFamilia', cat: 'familia', min: 14, max: 95, gap: 4,
+    texto: () => 'Seu tio mandou uma notícia falsa no grupo da família.',
+    escolhas: [
+      { t: 'Corrigir com fonte', fx: () => { karma(2); const t = achar('tio'); if (t) t.rel = clamp(t.rel - 5); line('Você mandou o link da checagem. O tio saiu do grupo indignado.'); } },
+      { t: 'Ignorar e silenciar o grupo', fx: () => line('Você silenciou o grupo da família por um ano.') },
+      { t: 'Mandar figurinha de bom dia', fx: () => { mod('felicidade', 2); line('Você respondeu com uma figurinha de "bom dia, abençoado".'); } }
+    ] },
+  { id: 'greveOnibus', cat: 'vida', min: 14, max: 70, gap: 6,
+    fx: () => { mod('felicidade', -2); line('Greve de ônibus: você andou uma hora até o destino.', 'bad'); } },
+  { id: 'churrascoVizinho', cat: 'familia', min: 18, max: 90, gap: 5,
+    texto: () => 'O vizinho chamou você para um churrasco no domingo.',
+    escolhas: [
+      { t: 'Ir e levar a carne', fx: () => { grana(-150); mod('felicidade', 5); if (chance(.4)) { const p = pessoa('amigo', pick(['M', 'F']), Math.max(18, S.idade + R(-8, 8))); S.rel.push(p); line(`No churrasco, você fez amizade com ${p.nome}.`, 'good'); } else line('O churrasco foi ótimo.', 'good'); } },
+      { t: 'Ir e levar só a farofa', fx: () => { karma(-1); mod('felicidade', 4); line('Você levou só um pacote de farofa pronta. Comeu de tudo.'); } },
+      { t: 'Inventar uma desculpa', fx: () => line('Você disse que tinha um compromisso.') }
+    ] },
+  { id: 'obraVizinho', cat: 'vida', min: 18, max: 95, gap: 6,
+    texto: () => 'O vizinho começou uma reforma: furadeira às 7h de sábado.',
+    escolhas: [
+      { t: 'Bater na porta e reclamar', fx: () => { if (chance(.5)) line('O vizinho pediu desculpas e mudou o horário.', 'good'); else { mod('felicidade', -3); line('O vizinho disse que está dentro do horário permitido.'); } } },
+      { t: 'Ligar o som mais alto', fx: () => { karma(-1); mod('felicidade', 2); line('Você respondeu com pagode no volume máximo.'); } },
+      { t: 'Aguentar', fx: () => { mod('felicidade', -3); line('Você passou três meses acordando com furadeira.'); } }
+    ] },
+  { id: 'pixErrado', cat: 'dinheiro', min: 18, max: 95, gap: 10,
+    texto: () => `Caiu um Pix de ${fmt(800)} de um desconhecido na sua conta. Foi engano.`,
+    escolhas: [
+      { t: 'Devolver', fx: () => { karma(5); mod('felicidade', 2); line('Você devolveu o Pix. A pessoa mandou um áudio agradecendo.', 'good'); } },
+      { t: 'Ficar com o dinheiro', fx: () => { karma(-6); grana(800); line(`Você ficou com os ${fmt(800)} que não eram seus.`); } }
+    ] },
+  { id: 'cpfNota', cat: 'dinheiro', min: 18, max: 95, gap: 8,
+    fx: () => { grana(30); line('Você colocou CPF na nota o ano todo e ganhou trinta reais de crédito.'); } },
+  { id: 'celularRoubado', cat: 'crime', min: 12, max: 85, p: .4, cond: s => s.pertences.some(x => x.ref === 'celular'),
+    fx: s => { const i = s.pertences.findIndex(x => x.ref === 'celular'); s.pertences.splice(i, 1); mod('felicidade', -6); line('Levaram seu celular no ônibus. Ainda faltavam oito parcelas.', 'bad'); } },
+  { id: 'gatonet', cat: 'crime', min: 18, max: 80, once: true,
+    texto: () => 'Um vizinho oferece "gatonet": TV a cabo pirata por trinta reais por mês.',
+    escolhas: [
+      { t: 'Aceitar', fx: () => { karma(-2); mod('felicidade', 3); if (chance(.2)) { grana(-1500); line('A operadora descobriu o gato e você pagou multa.', 'bad'); } else line('Você assistiu todos os jogos pelo gatonet.'); } },
+      { t: 'Recusar', fx: () => line('Você recusou o gatonet.') }
+    ] },
+  { id: 'culto', cat: 'familia', min: 12, max: 95, gap: 8,
+    texto: () => 'Uma vizinha te convidou para o culto de domingo.',
+    escolhas: [
+      { t: 'Ir ao culto', fx: () => { karma(2); mod('felicidade', 3); if (chance(.3)) { const p = pessoa('amigo', pick(['M', 'F']), Math.max(12, S.idade + R(-5, 5))); S.rel.push(p); line(`Você foi ao culto e fez amizade com ${p.nome}.`); } else line('Você foi ao culto e gostou dos louvores.'); } },
+      { t: 'Agradecer e recusar', fx: () => line('Você agradeceu o convite, mas não foi.') }
+    ] },
+  { id: 'timeCampeao', cat: 'vida', min: 6, max: 100, gap: 7, p: .4,
+    fx: s => { mod('felicidade', 8); line(`O ${s.time} foi campeão! Você comemorou até ficar sem voz.`, 'good'); } },
+  { id: 'rebaixado', cat: 'vida', min: 6, max: 100, gap: 10, p: .3,
+    fx: s => { mod('felicidade', -6); line(`O ${s.time} foi rebaixado. Você passou uma semana sem sair de casa.`, 'bad'); } },
+  { id: 'jogoCopa', cat: 'vida', min: 10, max: 95, gap: 4,
+    texto: () => 'Jogo do Brasil na Copa! Onde você vai assistir?',
+    escolhas: [
+      { t: 'No bar, com a galera', fx: () => { mod('felicidade', R(3, 6)); line('Você viu o jogo no bar, de camisa amarela e corneta.'); } },
+      { t: 'Em casa, com a família', fx: s => { s.rel.filter(r => ['mae', 'pai', 'parceiro', 'filho'].includes(r.tipo) && r.vivo).forEach(r => { r.rel = clamp(r.rel + 3); }); line('Você viu o jogo em casa com a família.'); } },
+      { t: 'Nem ligar para futebol', fx: () => line('Você aproveitou a rua vazia para resolver as coisas.') }
+    ] },
+  { id: 'decimoTerceiro', cat: 'dinheiro', min: 16, max: 75, gap: 2, p: .5, cond: s => !!s.emprego && s.emprego.id !== 'pol',
+    prep: s => ({ v: Math.round(s.emprego.sal / 12) }),
+    texto: (s, d) => `Caiu o 13º salário: ${fmt(d.v)}. O que fazer?`,
+    escolhas: [
+      { t: 'Guardar na poupança', fx: (s, d) => { s.inv.poupanca += d.v; line(`Você guardou o 13º na poupança.`, 'good'); } },
+      { t: 'Gastar nas compras de Natal', fx: (s, d) => { mod('felicidade', 5); line('Você gastou o 13º inteiro em presentes de Natal.'); } },
+      { t: 'Pagar as contas atrasadas', fx: (s, d) => { grana(d.v); line(`Você usou o 13º para pagar as contas.`); } }
+    ] },
+  { id: 'seguroDesemprego', cat: 'dinheiro', min: 18, max: 64, gap: 6, p: .5, cond: s => !s.emprego && flag('trabalhou') && !s.aposentado && !s.preso,
+    fx: () => { const v = preco(6000); grana(v); line(`Você recebeu ${fmt(v)} de seguro-desemprego.`); } },
+  { id: 'ipva', cat: 'dinheiro', min: 18, max: 100, gap: 2, p: .6, cond: () => temCarro(),
+    fx: () => { const v = preco(R(10, 40) * 100); grana(-v); line(`Chegou o IPVA: ${fmt(v)}.`, 'bad'); } },
+  { id: 'buraco', cat: 'dinheiro', min: 18, max: 100, gap: 4, cond: () => temCarro(),
+    fx: () => { grana(-600); line(`Você caiu num buraco e furou o pneu. Foram ${fmt(600)} de borracharia.`, 'bad'); } },
+  { id: 'multa', cat: 'dinheiro', min: 18, max: 100, gap: 3, p: .5, cond: () => temCarro(),
+    texto: () => 'Chegou uma multa de radar por excesso de velocidade.',
+    escolhas: [
+      { t: 'Pagar a multa', fx: () => { grana(-300); line('Você pagou a multa de radar.'); } },
+      { t: 'Recorrer no Detran', fx: () => { if (chance(.3)) line('O recurso foi aceito e a multa caiu.', 'good'); else { grana(-400); line('O recurso foi negado e a multa ficou mais cara.', 'bad'); } } }
+    ] },
+  { id: 'blitz', cat: 'crime', min: 18, max: 80, p: .6, cond: s => temCarro() && !s.cnh.carro,
+    fx: () => { grana(-3000); karma(-2); line('Você foi parad' + G('o', 'a') + ' numa blitz dirigindo sem CNH. Multa e carro guinchado.', 'bad'); } },
+  { id: 'intercambio', cat: 'escola', min: 16, max: 25, once: true, cond: s => s.dinheiro > 25000,
+    texto: () => `Apareceu a chance de fazer intercâmbio no Canadá por seis meses (${fmt(25000)}).`,
+    escolhas: [
+      { t: 'Ir', fx: () => { grana(-25000); mod('inteligencia', 6); mod('felicidade', 8); setFlag('ingles'); line('Você fez intercâmbio e voltou falando inglês.', 'good'); } },
+      { t: 'Deixar para depois', fx: () => line('Você guardou o dinheiro.') }
+    ] },
+  { id: 'escandalo', cat: 'trabalho', min: 18, max: 100, gap: 3, p: .5, cond: s => s.emprego && s.emprego.id === 'pol' && s.karma < 55,
+    texto: () => 'Vazou um áudio seu num esquema de rachadinha. A imprensa está na sua porta.',
+    escolhas: [
+      { t: 'Negar tudo', fx: s => { if (chance(.5)) line('A história sumiu do noticiário em uma semana.'); else { karma(-8); s.seguidores = Math.round(s.seguidores * .7); line('Ninguém acreditou. Abriram uma CPI.', 'bad'); } } },
+      { t: 'Pedir desculpas em rede nacional', fx: s => { karma(3); s.seguidores = Math.round(s.seguidores * .85); line('Você pediu desculpas em rede nacional.'); } },
+      { t: 'Renunciar', fx: s => { s.ultimoTrabalho = s.emprego.titulo; s.emprego = null; line('Você renunciou ao mandato.', 'bad'); } }
+    ] },
+  { id: 'vilao', cat: 'fama', min: 16, max: 90, gap: 3, cond: s => s.emprego && s.emprego.id === 'ator',
+    texto: () => 'A emissora te ofereceu o papel de vilão na novela das nove.',
+    escolhas: [
+      { t: 'Aceitar o papel', fx: s => { s.emprego.desemp = clamp(s.emprego.desemp + 12); s.seguidores = Math.round(s.seguidores * 1.3) + 10000; if (s.emprego.nivel >= 3) setFlag('estrela'); line('Seu vilão virou meme e o Brasil inteiro te odeia (no bom sentido).', 'good'); } },
+      { t: 'Recusar', fx: () => line('Você recusou o papel de vilão.') }
+    ] },
+  { id: 'protagonista', cat: 'fama', min: 16, max: 90, once: true, cond: s => s.emprego && s.emprego.id === 'ator' && s.emprego.nivel >= 3,
+    fx: () => { setFlag('estrela'); marco('Horário nobre', 'Você é protagonista da novela das nove. Seu rosto está em todas as revistas.'); } },
+  { id: 'vizinhaFofoca', cat: 'vida', min: 14, max: 95, gap: 7,
+    fx: () => { mod('felicidade', -2); line('A vizinha fofoqueira espalhou pelo prédio que você está devendo o condomínio.'); } }
 ];

@@ -3,170 +3,173 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-</head>
-<body>
 <title>Ano a Ano</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
 <style>
-/* Layout: uma coluna estreita como uma certidão de vida; diário de anos, barra fixa com o botão "+1 ano" como único ponto de cor forte */
+/* Layout: cabeçalho com avatar e saldo, diário de anos no meio, doca fixa embaixo com navegação, botão "+ Idade" e atributos; painéis em tela cheia por cima */
 :root {
-  --paper: #EDF0F5;
-  --card: #FFFFFF;
-  --ink: #17223A;
-  --muted: #5A6681;
-  --line: #D3D9E5;
-  --accent: #2B55E0;
-  --sun: #F4B62C;
-  --sun-ink: #1E1A0E;
-  --good: #23885A;
-  --warn: #C27D0E;
-  --bad: #C6303B;
-  --scrim: rgba(12, 18, 32, .45);
+  --paper: #EDF0F5; --card: #FFFFFF; --ink: #17223A; --muted: #5A6681; --line: #D8DDE8; --band: #6B7488; --band-ink: #FFFFFF;
+  --accent: #1F4FD1; --accent-ink: #FFFFFF; --sun: #F4B62C; --sun-ink: #1E1A0E;
+  --good: #23885A; --warn: #C27D0E; --bad: #C6303B; --scrim: rgba(12, 18, 32, .5);
   --c-vida: #8A94A8; --c-familia: #8452C9; --c-escola: #2B7FD9; --c-amor: #D3457B; --c-saude: #23885A;
   --c-dinheiro: #C2920E; --c-trabalho: #4F6F8F; --c-fama: #E0662B; --c-crime: #33363D;
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --gx: max(16px, env(safe-area-inset-left, 0px)); --gy: max(16px, env(safe-area-inset-right, 0px));
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --paper: #0E1320; --card: #161D2D; --ink: #E6EAF3; --muted: #93A0BA; --line: #2A3349;
-    --accent: #7E9CFF; --sun: #F5C24B; --sun-ink: #1E1A0E; --good: #4CC487; --warn: #E8AA3B; --bad: #F26A73;
-    --scrim: rgba(0, 0, 0, .6);
+    --paper: #0E1320; --card: #161D2D; --ink: #E6EAF3; --muted: #93A0BA; --line: #273047; --band: #2A3349; --band-ink: #E6EAF3;
+    --accent: #3E6BF0; --accent-ink: #FFFFFF; --sun: #F5C24B; --sun-ink: #1E1A0E;
+    --good: #4CC487; --warn: #E8AA3B; --bad: #F26A73; --scrim: rgba(0, 0, 0, .65);
     --c-vida: #8792AA; --c-familia: #B08AF0; --c-escola: #6AAEF5; --c-amor: #F27BA8; --c-saude: #4CC487;
     --c-dinheiro: #EBC244; --c-trabalho: #8FAACB; --c-fama: #FF9561; --c-crime: #C9CCD3;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --paper: #0E1320; --card: #161D2D; --ink: #E6EAF3; --muted: #93A0BA; --line: #2A3349;
-  --accent: #7E9CFF; --sun: #F5C24B; --sun-ink: #1E1A0E; --good: #4CC487; --warn: #E8AA3B; --bad: #F26A73;
-  --scrim: rgba(0, 0, 0, .6);
+  --paper: #0E1320; --card: #161D2D; --ink: #E6EAF3; --muted: #93A0BA; --line: #273047; --band: #2A3349; --band-ink: #E6EAF3;
+  --accent: #3E6BF0; --accent-ink: #FFFFFF; --sun: #F5C24B; --sun-ink: #1E1A0E;
+  --good: #4CC487; --warn: #E8AA3B; --bad: #F26A73; --scrim: rgba(0, 0, 0, .65);
   --c-vida: #8792AA; --c-familia: #B08AF0; --c-escola: #6AAEF5; --c-amor: #F27BA8; --c-saude: #4CC487;
   --c-dinheiro: #EBC244; --c-trabalho: #8FAACB; --c-fama: #FF9561; --c-crime: #C9CCD3;
   color-scheme: dark;
 }
-body {
-  background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0 calc(112px + env(safe-area-inset-bottom, 0px));
-}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-left: var(--gx); padding-right: var(--gy); padding-block: 0 calc(206px + env(safe-area-inset-bottom, 0px)); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--card); }
 .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
-.app { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
 button { font: inherit; color: inherit; cursor: pointer; }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 button:disabled { cursor: not-allowed; opacity: .45; }
+[hidden] { display: none !important; }
 
-.top { display: grid; gap: 4px; padding-top: 18px; }
-.top-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
-.top-main { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
-.who { min-width: 0; }
-.reg { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.menu-btn { background: none; border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px; font-size: 13px; font-weight: 700; flex-shrink: 0; }
-h1 { font-family: var(--display); font-weight: 800; font-size: clamp(24px, 6vw, 32px); line-height: 1.1; margin: 4px 0 2px; text-wrap: balance; }
-.sub { color: var(--muted); }
+/* cabeçalho */
+.topo { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 4; background: var(--card); border-bottom: 1px solid var(--line);
+  margin-left: calc(-1 * var(--gx)); margin-right: calc(-1 * var(--gy)); padding: 10px var(--gy) 10px var(--gx); }
+.topo-in { max-width: 600px; margin: 0 auto; display: flex; align-items: center; gap: 10px; }
+.menu { background: none; border: 1px solid var(--line); border-radius: 10px; width: 38px; height: 38px; font-size: 18px; flex-shrink: 0; }
+.quem { min-width: 0; flex: 1; }
+.nome-linha { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.uf { font-size: 10px; background: var(--accent); color: var(--accent-ink); border-radius: 4px; padding: 1px 4px; flex-shrink: 0; }
+h1 { font-family: var(--display); font-weight: 800; font-size: 19px; line-height: 1.15; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--accent); }
+.sub { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cash { text-align: right; flex-shrink: 0; position: relative; }
-.cash .lbl { display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.cash strong { font-size: 19px; }
-.neg { color: var(--bad); }
+.cash strong { display: block; font-size: 18px; color: var(--accent); }
+.cash strong.neg { color: var(--bad); }
+.cash .lbl { font-size: 11px; color: var(--muted); }
 
-.stats { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 10px; }
-.stat { display: grid; grid-template-columns: 104px 1fr 34px; align-items: center; gap: 10px; position: relative; }
-.stat span:first-child { font-weight: 700; font-size: 14px; }
-.track { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
-.fill { height: 100%; border-radius: 99px; transition: width .4s ease; }
-.stat .v { text-align: right; font-size: 13px; color: var(--muted); }
-.delta { position: absolute; right: -6px; top: -14px; font-family: var(--mono); font-size: 12px; font-weight: 500; padding: 0 5px; border-radius: 6px;
-  background: var(--card); animation: sobe 1.8s ease forwards; pointer-events: none; }
-.delta.up { color: var(--good); }
-.delta.down { color: var(--bad); }
-.cash .delta { right: 0; top: -16px; }
-@keyframes sobe { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; transform: none; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
+/* avatares */
+.av { display: inline-grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--paper); flex-shrink: 0; overflow: hidden; }
+.av svg { width: 100%; height: 100%; }
+.av.pet { font-size: 24px; }
+.av.dead { filter: grayscale(1); opacity: .6; }
+.av.grande { width: 64px; height: 64px; }
+.av.grande.pet { font-size: 38px; }
+.topo .av { width: 44px; height: 44px; }
 
-.log { display: flex; flex-direction: column; gap: 14px; }
-.yr { border-left: 2px solid var(--line); padding-left: 14px; }
-.yr.now { border-left-color: var(--accent); }
-.yr header { display: flex; align-items: baseline; gap: 10px; }
-.yr h3 { font-family: var(--display); font-weight: 700; font-size: 17px; margin: 0; }
-.yr .ano { font-size: 12px; color: var(--muted); }
-.yr ul { list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 3px; }
+/* diário */
+.log { max-width: 600px; margin: 14px auto 0; display: flex; flex-direction: column; gap: 14px; }
+.yr h3 { font-family: var(--display); font-weight: 700; font-size: 16px; margin: 0 0 2px; color: var(--accent); }
+.yr h3 .mono { font-size: 12px; color: var(--muted); font-weight: 500; margin-left: 6px; }
+.yr ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
 .yr li { position: relative; padding-left: 16px; }
 .yr li::before { content: ""; position: absolute; left: 0; top: .5em; width: 8px; height: 8px; border-radius: 50%; background: var(--dot, var(--c-vida)); }
 .yr li.good { font-weight: 700; }
 .yr li.bad { color: var(--bad); }
 .yr li.quiet { color: var(--muted); }
+.yr:not(.now) { opacity: .82; }
 .cat-vida { --dot: var(--c-vida); } .cat-familia { --dot: var(--c-familia); } .cat-escola { --dot: var(--c-escola); }
 .cat-amor { --dot: var(--c-amor); } .cat-saude { --dot: var(--c-saude); } .cat-dinheiro { --dot: var(--c-dinheiro); }
 .cat-trabalho { --dot: var(--c-trabalho); } .cat-fama { --dot: var(--c-fama); } .cat-crime { --dot: var(--c-crime); }
-
 .obit { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
 .obit h2 { font-family: var(--display); font-size: 22px; margin: 0; }
-.fita { display: inline-flex; align-items: center; gap: 8px; align-self: start; justify-self: start; background: var(--sun); color: var(--sun-ink);
-  font-family: var(--display); font-weight: 800; padding: 4px 18px 4px 12px; clip-path: polygon(0 0, 100% 0, 94% 50%, 100% 100%, 0 100%); }
-.obit dl, .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; }
-.obit dt, .kv span { color: var(--muted); }
-.obit dd { margin: 0; }
-.kv b { text-align: right; }
+.obit dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; }
+.obit dt { color: var(--muted); } .obit dd { margin: 0; }
+.fita { justify-self: start; background: var(--sun); color: var(--sun-ink); font-family: var(--display); font-weight: 800; padding: 4px 20px 4px 12px; clip-path: polygon(0 0, 100% 0, 92% 50%, 100% 100%, 0 100%); }
 .legado { display: grid; gap: 8px; }
+.primary { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 12px; padding: 12px 16px; font-weight: 700; }
+.ghost { background: none; border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; font-weight: 700; }
 
-.primary { background: var(--accent); color: var(--card); border: 0; border-radius: 12px; padding: 12px 16px; font-weight: 700; }
-
-.bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--card); border-top: 1px solid var(--line);
-  padding: 6px max(16px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
-.bar-in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr auto 1fr 1fr; align-items: end; gap: 4px; }
-.tab { background: none; border: 0; padding: 12px 2px 6px; font-size: 13px; font-weight: 700; color: var(--muted); border-radius: 10px; }
-.tab:hover { color: var(--ink); }
-.age { width: 70px; height: 70px; border-radius: 50%; border: 4px solid var(--card); background: var(--sun); color: var(--sun-ink);
-  font-family: var(--display); font-weight: 800; font-size: 24px; line-height: 1; margin: -26px 6px 0; display: grid; place-content: center;
-  box-shadow: 0 6px 18px rgba(0,0,0,.18); transition: transform .12s ease; }
-.age small { font-family: var(--body); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+/* doca */
+.doca { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--card); border-top: 1px solid var(--line);
+  padding: 0 var(--gy) calc(8px + env(safe-area-inset-bottom, 0px)) var(--gx); }
+.nav { max-width: 600px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr auto 1fr 1fr; align-items: end; background: var(--accent); color: var(--accent-ink);
+  margin-left: calc(-1 * var(--gx)); margin-right: calc(-1 * var(--gy)); padding: 6px var(--gy) 6px var(--gx); }
+@media (min-width: 640px) { .nav { margin-left: auto; margin-right: auto; border-radius: 0 0 14px 14px; } }
+.tab { background: none; border: 0; padding: 4px 2px; font-size: 12px; font-weight: 700; display: grid; justify-items: center; gap: 3px; min-width: 0; }
+.ico-c { width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.2); display: grid; place-items: center; font-size: 18px; }
+.age { width: 78px; height: 78px; border-radius: 50%; border: 5px solid var(--card); background: var(--sun); color: var(--sun-ink); margin: -30px 6px -6px;
+  font-family: var(--display); font-weight: 800; font-size: 26px; line-height: .9; display: grid; place-content: center; box-shadow: 0 6px 18px rgba(0,0,0,.2); transition: transform .12s ease; }
+.age small { font-family: var(--body); font-size: 12px; font-weight: 700; }
 .age:active:not(:disabled) { transform: scale(.94); }
+.stats { max-width: 600px; margin: 8px auto 0; display: grid; gap: 4px; }
+.stat { display: grid; grid-template-columns: 96px 1fr 44px; align-items: center; gap: 10px; position: relative; }
+.stat .lbl { font-weight: 700; font-size: 13px; text-align: right; color: var(--accent); }
+.bar { height: 14px; background: var(--paper); border-radius: 4px; overflow: hidden; }
+.bar > span, .mini > span { display: block; height: 100%; transition: width .4s ease; }
+.stat .v { font-size: 12px; font-weight: 500; }
+.delta { position: absolute; right: 48px; top: -6px; font-family: var(--mono); font-size: 12px; padding: 0 5px; border-radius: 6px; background: var(--card); animation: sobe 1.8s ease forwards; pointer-events: none; }
+.delta.up { color: var(--good); } .delta.down { color: var(--bad); }
+.cash .delta { right: 0; top: auto; bottom: -14px; }
+@keyframes sobe { 0% { opacity: 0; transform: translateY(6px); } 15% { opacity: 1; transform: none; } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(-8px); } }
 
-.scrim { position: fixed; inset: 0; background: var(--scrim); z-index: 10; }
-.sheet { position: fixed; left: 50%; transform: translateX(-50%); bottom: 0; z-index: 11; width: min(560px, 100%); max-height: 84%; overflow-y: auto;
-  background: var(--card); border-radius: 18px 18px 0 0; border: 1px solid var(--line); border-bottom: 0;
-  padding: 16px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
-.sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; position: sticky; top: -16px; background: var(--card); padding-block: 6px; z-index: 1; }
-.sheet-head h2 { font-family: var(--display); font-size: 21px; margin: 0; }
-.ghost { background: none; border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; }
-.legado .ghost { padding: 12px 16px; font-weight: 700; }
-.group { display: grid; gap: 8px; margin-bottom: 18px; }
-.group h4 { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--paper);
-  border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; }
-.row > span:first-child { min-width: 0; }
-.row:hover:not(:disabled) { border-color: var(--accent); }
-.row b { display: block; }
-.row small { color: var(--muted); }
+/* painéis */
+.painel { position: fixed; inset: 0; z-index: 15; background: var(--paper); display: flex; flex-direction: column; }
+.painel-topo { background: var(--accent); color: var(--accent-ink); padding: calc(10px + env(safe-area-inset-top, 0px)) var(--gy) 10px var(--gx); display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; }
+.painel-topo button { width: 38px; height: 38px; border-radius: 50%; border: 2px solid currentColor; background: none; color: inherit; font-size: 18px; font-weight: 700; line-height: 1; }
+.painel-topo h2 { margin: 0; text-align: center; font-family: var(--display); font-weight: 800; font-size: 20px; text-transform: uppercase; letter-spacing: .04em; }
+.painel-corpo { flex: 1; overflow-y: auto; padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)); }
+.painel-corpo > * { max-width: 600px; margin-left: auto; margin-right: auto; }
+.secao { margin: 0 auto; background: var(--band); color: var(--band-ink); text-align: center; font-size: 13px; letter-spacing: .04em; padding: 5px 16px; }
+.row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: var(--card); border: 0; border-bottom: 1px solid var(--line);
+  padding: 12px var(--gy) 12px var(--gx); }
+@media (min-width: 640px) { .row { padding-left: 16px; padding-right: 16px; } }
+.row:hover:not(:disabled) { background: color-mix(in srgb, var(--card) 92%, var(--accent)); }
+.row .ico { width: 40px; height: 40px; display: grid; place-items: center; font-size: 26px; flex-shrink: 0; }
+.row .txt { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.row b { font-family: var(--display); font-size: 17px; color: var(--accent); }
+.row:disabled b { color: var(--muted); }
+.row .rot { font-family: var(--body); font-weight: 400; color: var(--muted); font-size: 15px; }
+.row small { color: var(--muted); font-size: 13px; }
 .row .tag { font-size: 12px; color: var(--muted); white-space: nowrap; text-align: right; }
-.note { color: var(--muted); margin: 0; }
-.intro { margin-bottom: 14px; }
-.card { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; display: grid; gap: 8px; }
-.card.dead { opacity: .55; }
-.card-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
-.card-top > span { min-width: 0; }
-.card-top small { color: var(--muted); }
+.row .seta { font-size: 24px; color: var(--accent); line-height: 1; }
+.mini { display: block; width: 100%; max-width: 220px; height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; margin-top: 4px; }
+.nota { color: var(--muted); margin: 12px auto; padding: 0 16px; font-size: 14px; }
+.cartao .nota { padding: 0; margin: 4px 0 0; }
+.cartao { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px; margin: 12px auto !important; width: calc(100% - 32px); }
+.cartao > b { font-family: var(--display); font-size: 17px; }
+.kv, .kv2 { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; align-items: center; }
+.kv span { color: var(--muted); } .kv b { text-align: right; }
+.kv2 span { color: var(--muted); font-size: 13px; } .kv2 .mini { margin: 0; }
+.neg { color: var(--bad); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { background: var(--card); border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; font-size: 13px; }
+.chip { background: var(--paper); border: 1px solid var(--line); border-radius: 99px; padding: 6px 12px; font-size: 13px; }
 .chip:hover:not(:disabled) { border-color: var(--accent); }
-.field { display: grid; gap: 4px; }
-.field label { font-weight: 700; font-size: 14px; }
-.field input, .field select { font: inherit; color: var(--ink); background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
-.conq { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
-.conq div { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.perfil { display: flex; gap: 14px; align-items: center; padding: 16px var(--gy) 16px var(--gx); background: var(--card); border-bottom: 1px solid var(--line); }
+.perfil > div { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.perfil b { font-family: var(--display); font-size: 20px; color: var(--accent); }
+.perfil span { color: var(--muted); }
+.campo { display: grid; gap: 4px; padding: 8px 16px; }
+.campo label { font-weight: 700; font-size: 14px; }
+.campo input, .campo select { font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+.largo { display: block; width: calc(100% - 32px); margin: 8px auto 16px !important; }
+.conq { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; padding: 12px 16px; }
+.conq div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
 .conq div.off { opacity: .45; }
-.conq b { display: block; font-size: 14px; }
-.conq small { color: var(--muted); font-size: 12px; }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; }
-.legend li { position: relative; padding-left: 14px; font-size: 13px; }
-.legend li::before { content: ""; position: absolute; left: 0; top: .45em; width: 8px; height: 8px; border-radius: 50%; background: var(--dot); }
+.conq b { display: block; font-size: 14px; } .conq small { color: var(--muted); font-size: 12px; }
+.legenda { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 0 16px; list-style: none; }
+.legenda li { position: relative; padding-left: 14px; font-size: 13px; }
+.legenda li::before { content: ""; position: absolute; left: 0; top: .45em; width: 8px; height: 8px; border-radius: 50%; background: var(--dot); }
 
-.modal { position: fixed; inset: 0; z-index: 20; background: var(--scrim); display: grid; place-items: center;
-  padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); }
+/* modal de eventos */
+.modal { position: fixed; inset: 0; z-index: 20; background: var(--scrim); display: grid; place-items: center; padding: 16px var(--gy) 16px var(--gx); }
 .modal-card { background: var(--card); border-radius: 18px; padding: 20px; width: min(440px, 100%); max-height: 90%; overflow-y: auto; display: grid; gap: 12px; border: 1px solid var(--line); }
 .eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
 .modal-card h2 { font-family: var(--display); font-weight: 800; font-size: 28px; line-height: 1.1; margin: 0; text-wrap: balance; }
@@ -177,45 +180,51 @@ h1 { font-family: var(--display); font-weight: 800; font-size: clamp(24px, 6vw, 
 .choices button:hover { border-color: var(--accent); }
 .modal.marco .choices button { background: var(--sun); color: var(--sun-ink); border-color: var(--sun); text-align: center; }
 
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(100px + env(safe-area-inset-bottom, 0px)); z-index: 30;
+/* fuga */
+.fuga-card { background: var(--card); border-radius: 18px; padding: 16px; width: min(380px, 100%); display: grid; gap: 10px; justify-items: center; }
+.fuga-card h2 { font-family: var(--display); margin: 0; }
+.grade { display: grid; grid-template-columns: repeat(11, 1fr); width: 100%; max-width: 330px; aspect-ratio: 1; border-radius: 8px; overflow: hidden; }
+.grade .c.parede { background: var(--ink); } .grade .c.chao { background: var(--paper); }
+.grade .c.eu { background: var(--accent); border-radius: 50%; } .grade .c.guarda { background: var(--bad); border-radius: 50%; } .grade .c.saida { background: var(--good); }
+.ctrl { display: grid; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(2, 44px); gap: 6px; }
+.ctrl button { border: 1px solid var(--line); background: var(--paper); border-radius: 10px; font-size: 20px; }
+.ctrl .cima { grid-column: 2; }
+#fugaMsg { color: var(--muted); text-align: center; margin: 0; font-size: 14px; }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(220px + env(safe-area-inset-bottom, 0px)); z-index: 30;
   background: var(--ink); color: var(--paper); border-radius: 12px; padding: 10px 16px; max-width: calc(100% - 32px); font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
 #confete { position: fixed; inset: 0; z-index: 25; pointer-events: none; width: 100%; height: 100%; }
-
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
-
-<div class="app">
-  <header class="top">
-    <div class="top-row">
-      <div class="reg mono" id="reg"></div>
-      <button class="menu-btn" data-open="menu">Menu</button>
+</head>
+<body>
+<header class="topo">
+  <div class="topo-in">
+    <button class="menu" data-go="menu" aria-label="Menu">☰</button>
+    <span id="avatar"></span>
+    <div class="quem">
+      <div class="nome-linha"><span id="uf" class="uf mono"></span><h1 id="nome"></h1></div>
+      <div class="sub" id="sub"></div>
     </div>
-    <div class="top-main">
-      <div class="who">
-        <h1 id="nome"></h1>
-        <div class="sub" id="sub"></div>
-      </div>
-      <div class="cash"><span class="lbl">Saldo</span><strong id="money" class="mono"></strong><span id="moneyDelta"></span></div>
-    </div>
-  </header>
-  <section class="stats" id="stats" aria-label="Atributos"></section>
-  <main class="log" id="log" aria-live="polite"></main>
-</div>
-
-<nav class="bar" aria-label="Ações">
-  <div class="bar-in">
-    <button class="tab" data-open="atividades">Atividades</button>
-    <button class="tab" data-open="carreira" id="tabCarreira">Escola</button>
-    <button class="age" id="age" aria-label="Avançar um ano">+1<small>ano</small></button>
-    <button class="tab" data-open="pessoas">Pessoas</button>
-    <button class="tab" data-open="bens">Bens</button>
+    <div class="cash"><strong id="money" class="mono"></strong><span class="lbl">Saldo bancário</span><span id="moneyDelta"></span></div>
   </div>
-</nav>
+</header>
+<main class="log" id="log" aria-live="polite"></main>
 
-<div class="scrim" id="scrim" hidden></div>
-<section class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-  <div class="sheet-head"><h2 id="sheetTitle"></h2><button class="ghost" id="sheetClose">Fechar</button></div>
-  <div id="sheetBody"></div>
+<footer class="doca">
+  <nav class="nav" aria-label="Ações">
+    <button class="tab" data-go="ocupacao" id="tabOcupacao"></button>
+    <button class="tab" data-go="bens"><span class="ico-c">💰</span>Bens</button>
+    <button class="age" id="age" aria-label="Avançar um ano">+<small>Idade</small></button>
+    <button class="tab" data-go="relacoes"><span class="ico-c">❤️</span>Relações</button>
+    <button class="tab" data-go="atividades"><span class="ico-c">⋯</span>Atividades</button>
+  </nav>
+  <section class="stats" id="stats" aria-label="Atributos"></section>
+</footer>
+
+<section class="painel" id="painel" hidden role="dialog" aria-modal="true" aria-labelledby="painelTitulo">
+  <div class="painel-topo"><button id="painelVoltar" aria-label="Fechar">✕</button><h2 id="painelTitulo"></h2><span></span></div>
+  <div class="painel-corpo" id="painelCorpo"></div>
 </section>
 <section class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalText">
   <div class="modal-card">
@@ -225,1033 +234,23 @@ h1 { font-family: var(--display); font-weight: 800; font-size: clamp(24px, 6vw, 
     <div class="choices" id="modalChoices"></div>
   </div>
 </section>
+<section class="modal" id="fuga" hidden role="dialog" aria-modal="true" aria-labelledby="fugaTitulo">
+  <div class="fuga-card">
+    <h2 id="fugaTitulo">Fuga da prisão</h2>
+    <div class="grade" id="fugaGrade"></div>
+    <p id="fugaMsg"></p>
+    <div class="ctrl" id="fugaCtrl">
+      <button class="cima" data-d="0,-1" aria-label="Cima">↑</button>
+      <button data-d="-1,0" aria-label="Esquerda">←</button><button data-d="0,1" aria-label="Baixo">↓</button><button data-d="1,0" aria-label="Direita">→</button>
+    </div>
+  </div>
+</section>
 <div class="toast" id="toast" hidden role="status"></div>
 <canvas id="confete" hidden></canvas>
 
-<script src="eventos.js"></script>
-<script>
-// ================= utilidades =================
-const $ = id => document.getElementById(id);
-const R = (a, b) => Math.floor(Math.random() * (b - a + 1)) + a;
-const pick = a => a[Math.floor(Math.random() * a.length)];
-const chance = p => Math.random() < p;
-const clamp = v => Math.max(0, Math.min(100, Math.round(v)));
-const uid = () => Math.random().toString(36).slice(2, 9);
-const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const lerLS = (k, def) => { try { const t = localStorage.getItem(k); return t ? JSON.parse(t) : def; } catch (e) { return def; } };
-const gravarLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
-const SAVE_KEY = 'ano-a-ano:v2', CONQ_KEY = 'ano-a-ano:conquistas', VIDAS_KEY = 'ano-a-ano:vidas', SOM_KEY = 'ano-a-ano:som';
-const ANO_INICIAL = 2026;
-
-// ================= dados =================
-const NM = ['Miguel','Arthur','Gael','Heitor','Theo','Davi','Gabriel','Bernardo','Samuel','João','Pedro','Lucas','Rafael','Enzo','Matheus','Caio','Bruno','Felipe','Thiago','Vinícius','Otávio','Benício','Lorenzo','Igor'];
-const NF = ['Helena','Alice','Laura','Maria','Valentina','Heloísa','Cecília','Júlia','Sofia','Manuela','Lívia','Beatriz','Ana','Clara','Lara','Isadora','Mariana','Luiza','Yasmin','Rafaela','Bianca','Gabriela','Antonella','Lorena'];
-const SOB = ['Silva','Santos','Oliveira','Souza','Rodrigues','Ferreira','Alves','Pereira','Lima','Gomes','Costa','Ribeiro','Martins','Carvalho','Rocha','Almeida','Nascimento','Araújo','Barbosa','Cardoso','Moreira','Teixeira','Mendes','Freitas'];
-const CIDADES = ['São Paulo','Rio de Janeiro','Belo Horizonte','Salvador','Recife','Fortaleza','Porto Alegre','Curitiba','Manaus','Belém','Goiânia','Florianópolis','Natal','Campinas','São Luís','Vitória'];
-const DESTINOS = ['Fernando de Noronha','Gramado','Bonito','Jericoacoara','Lisboa','Buenos Aires','Chapada Diamantina','Paraty','Santiago','Lençóis Maranhenses'];
-const LIVROS = ['Dom Casmurro','Capitães da Areia','O Pequeno Príncipe','Vidas Secas','Grande Sertão: Veredas','A Hora da Estrela','O Alquimista','Torto Arado','Harry Potter','Memórias Póstumas de Brás Cubas'];
-const PETS = ['Caramelo','Paçoca','Pipoca','Thor','Mel','Bolinha','Pretinha','Fubá'];
-const CURSOS = {
-  'Medicina': { anos: 6, nota: 85 }, 'Direito': { anos: 5, nota: 70 }, 'Engenharia': { anos: 5, nota: 70 },
-  'Computação': { anos: 4, nota: 65 }, 'Enfermagem': { anos: 4, nota: 55 }, 'Administração': { anos: 4, nota: 50 }, 'Pedagogia': { anos: 4, nota: 45 }
-};
-const FORM = { nenhuma: 0, fundamental: 1, medio: 2, superior: 3 };
-const FORM_NOME = { nenhuma: 'Sem formação', fundamental: 'Ensino fundamental', medio: 'Ensino médio', superior: 'Ensino superior' };
-// Valores internos ficam sempre em reais; a taxa converte para a moeda do país na tela.
-const PAISES = {
-  'Brasil': { moeda: 'BRL', taxa: 1, sal: 1, custo: 1 },
-  'Portugal': { moeda: 'EUR', taxa: 6.2, sal: 1.7, custo: 1.5 },
-  'Estados Unidos': { moeda: 'USD', taxa: 5.6, sal: 3.2, custo: 2.6 },
-  'Canadá': { moeda: 'CAD', taxa: 4.1, sal: 2.7, custo: 2.2 },
-  'Japão': { moeda: 'JPY', taxa: 0.037, sal: 2.3, custo: 2.0 }
-};
-const DOENCAS = {
-  'Pressão alta': { grav: 2, custo: 2000, cura: .7 },
-  'Diabetes': { grav: 3, custo: 4000, cura: .5 },
-  'Depressão': { grav: 2, custo: 3000, cura: .6, fel: 4 },
-  'Hérnia de disco': { grav: 2, custo: 15000, cura: .85 },
-  'Pneumonia': { grav: 7, custo: 5000, cura: .9 },
-  'Câncer': { grav: 9, custo: 90000, cura: .45 }
-};
-const IMOVEIS = [
-  { id: 'kitnet', nome: 'Kitnet', valor: 180000 }, { id: 'apto', nome: 'Apartamento de 2 quartos', valor: 420000 },
-  { id: 'casa', nome: 'Casa com quintal', valor: 750000 }, { id: 'cobertura', nome: 'Cobertura com piscina', valor: 2500000 }
-];
-const CARROS = [
-  { id: 'popular', nome: 'Carro popular', valor: 70000 }, { id: 'suv', nome: 'SUV', valor: 190000 }, { id: 'esportivo', nome: 'Carro esportivo', valor: 850000 }
-];
-const CARREIRAS = [
-  { id: 'lanche', m: 'Atendente de lanchonete', f: 'Atendente de lanchonete', sal: 18000, idade: 16, form: 'nenhuma' },
-  { id: 'estagio', m: 'Estagiário', f: 'Estagiária', sal: 15000, idade: 18, estudante: true },
-  { id: 'caixa', m: 'Operador de caixa', f: 'Operadora de caixa', sal: 24000, idade: 18, form: 'medio' },
-  { id: 'app', m: 'Motorista de aplicativo', f: 'Motorista de aplicativo', sal: 32000, idade: 18, form: 'medio' },
-  { id: 'adm', m: 'Auxiliar administrativo', f: 'Auxiliar administrativa', sal: 34000, idade: 18, form: 'medio' },
-  { id: 'servidor', m: 'Servidor público', f: 'Servidora pública', sal: 70000, idade: 18, form: 'medio', concurso: true },
-  { id: 'musico', m: 'Músico', f: 'Musicista', sal: 26000, idade: 16, form: 'nenhuma', flag: 'violao', flagMsg: 'Exige saber tocar um instrumento' },
-  { id: 'fut', m: 'Jogador de futebol', f: 'Jogadora de futebol', sal: 0, idade: 17, idadeMax: 33, form: 'nenhuma', flag: 'base', flagMsg: 'Exige passar na peneira de um time' },
-  { id: 'prof', m: 'Professor', f: 'Professora', sal: 55000, idade: 21, curso: 'Pedagogia' },
-  { id: 'enf', m: 'Enfermeiro', f: 'Enfermeira', sal: 65000, idade: 21, curso: 'Enfermagem' },
-  { id: 'analista', m: 'Analista de negócios', f: 'Analista de negócios', sal: 75000, idade: 21, curso: 'Administração' },
-  { id: 'dev', m: 'Programador', f: 'Programadora', sal: 110000, idade: 21, curso: 'Computação' },
-  { id: 'eng', m: 'Engenheiro civil', f: 'Engenheira civil', sal: 120000, idade: 22, curso: 'Engenharia' },
-  { id: 'adv', m: 'Advogado', f: 'Advogada', sal: 130000, idade: 22, curso: 'Direito' },
-  { id: 'med', m: 'Médico', f: 'Médica', sal: 240000, idade: 24, curso: 'Medicina' }
-];
-const STATS = [['felicidade', 'Felicidade'], ['saude', 'Saúde'], ['inteligencia', 'Inteligência'], ['aparencia', 'Aparência']];
-const CATS = { vida: 'Vida', familia: 'Família', escola: 'Escola', amor: 'Amor', saude: 'Saúde', dinheiro: 'Dinheiro', trabalho: 'Trabalho', fama: 'Fama', crime: 'Crime' };
-
-// ================= estado e ajudantes =================
-let S = null;
-let CUR_CAT = null;
-let deltas = {};
-const fmtCache = {};
-function fmt(v) {
-  const p = PAISES[(S && S.pais) || 'Brasil'];
-  fmtCache[p.moeda] = fmtCache[p.moeda] || new Intl.NumberFormat('pt-BR', { style: 'currency', currency: p.moeda, maximumFractionDigits: 0 });
-  return fmtCache[p.moeda].format(Math.round(v / p.taxa));
-}
-const num = n => new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
-const preco = v => Math.round(v * PAISES[S.pais].custo);
-const G = (m, f) => (S && S.sexo === 'F' ? f : m);
-const flag = k => !!(S && S.flags[k]);
-const setFlag = (k, v = true) => { S.flags[k] = v; };
-function mod(k, d) { const a = S.st[k]; S.st[k] = clamp(a + d); deltas[k] = (deltas[k] || 0) + (S.st[k] - a); }
-function grana(d) { d = Math.round(d); S.dinheiro += d; deltas.dinheiro = (deltas.dinheiro || 0) + d; }
-function line(t, tone = '', cat) { S.log[S.log.length - 1].l.push({ t, tone, c: cat || CUR_CAT || 'vida' }); }
-const addAno = () => { S.log.push({ i: S.idade, a: S.ano, l: [] }); };
-const achar = tipo => S.rel.find(r => r.tipo === tipo && r.vivo);
-const filhosVivos = () => S.rel.filter(r => r.tipo === 'filho' && r.vivo);
-const paisVivos = () => S.rel.filter(r => (r.tipo === 'mae' || r.tipo === 'pai') && r.vivo);
-const temCurso = c => S.cursos.includes(c);
-const rotuloTexto = t => (typeof t === 'function' ? t(S) : t);
-
-function pessoa(tipo, sexo, idade, sob) {
-  const nome = tipo === 'pet' ? pick(PETS) : `${sexo === 'F' ? pick(NF) : pick(NM)} ${sob || pick(SOB)}`;
-  return { id: uid(), tipo, sexo, nome, idade, rel: R(55, 90), vivo: true };
-}
-function rotulo(r) {
-  const f = r.sexo === 'F';
-  switch (r.tipo) {
-    case 'mae': return 'Mãe';
-    case 'pai': return 'Pai';
-    case 'irmao': return f ? 'Irmã' : 'Irmão';
-    case 'amigo': return f ? 'Amiga' : 'Amigo';
-    case 'parceiro': return r.casado ? (f ? 'Esposa' : 'Marido') : (f ? 'Namorada' : 'Namorado');
-    case 'filho': return f ? 'Filha' : 'Filho';
-    case 'ex': return 'Ex';
-    case 'pet': return 'Cachorro';
-  }
-  return '';
-}
-const quem = r => `${r.nome} (${rotulo(r).toLowerCase()})`;
-function marco(titulo, texto) { S.fila.push({ id: '__marco', d: { titulo, texto } }); line(texto, 'good'); }
-function sexoParceiro() { return S.interesse === 'A' ? pick(['M', 'F']) : S.interesse; }
-function novoParceiro(nome, sexo, sufixo) {
-  S.rel.push({ id: uid(), tipo: 'parceiro', sexo, nome, idade: Math.max(14, S.idade + R(-3, 3)), rel: R(60, 85), vivo: true, casado: false });
-  mod('felicidade', R(5, 10));
-  line(`Você começou a namorar ${nome}${sufixo || ''}.`, 'good', 'amor');
-}
-function conhecerAlguem(onde) {
-  if (achar('parceiro')) { line(`Você conheceu gente legal ${onde}.`); return; }
-  const p = pessoa('parceiro', sexoParceiro(), 0);
-  novoParceiro(p.nome, p.sexo, `, que você conheceu ${onde}`);
-}
-function casar(p) {
-  p.casado = true; setFlag('casou');
-  const v = R(5, 25) * 1000; grana(-v); mod('felicidade', 15); p.rel = clamp(p.rel + 10);
-  S.fila.push({ id: '__marco', d: { titulo: 'Casamento', texto: `Você se casou com ${p.nome}. A festa custou ${fmt(v)}.` } });
-  line(`Você se casou com ${p.nome}.`, 'good', 'amor');
-}
-function terminarRelacao(p) {
-  const era = p.casado; p.tipo = 'ex'; p.casado = false; p.rel = clamp(p.rel - 30); mod('felicidade', -R(5, 12));
-  if (era) {
-    setFlag('divorciou');
-    if (S.dinheiro > 0) { const v = Math.round(S.dinheiro * .4); grana(-v); line(`Você se divorciou de ${p.nome}. Na partilha, foram ${fmt(v)}.`, 'bad', 'amor'); return; }
-    line(`Você se divorciou de ${p.nome}.`, 'bad', 'amor');
-  } else line(`Você terminou com ${p.nome}.`, 'bad', 'amor');
-}
-function nascerFilho() {
-  const sx = pick(['M', 'F']); const f = pessoa('filho', sx, 0, S.sobrenome); f.rel = R(80, 100); S.rel.push(f);
-  mod('felicidade', 12);
-  S.fila.push({ id: '__marco', d: { titulo: sx === 'F' ? 'É uma menina!' : 'É um menino!', texto: `Nasceu ${sx === 'F' ? 'sua filha' : 'seu filho'}, ${f.nome}.` } });
-  line(`Nasceu ${sx === 'F' ? 'sua filha' : 'seu filho'}, ${f.nome}!`, 'good', 'familia');
-}
-function prender(anos, motivo) {
-  S.ficha++; setFlag('preso');
-  if (S.emprego) { S.ultimoTrabalho = S.emprego.titulo; S.emprego = null; }
-  if (S.faculdade) { line(`Você perdeu a vaga na faculdade de ${S.faculdade.curso}.`, 'bad', 'escola'); S.faculdade = null; }
-  S.preso = anos; mod('felicidade', -15);
-  const a = `${anos} ${anos === 1 ? 'ano' : 'anos'}`;
-  line(S.idade < 18 ? `Você foi ${G('apreendido', 'apreendida')} por ${motivo} e vai cumprir ${a} de internação.` : `Você foi ${G('preso', 'presa')} por ${motivo}. Pena: ${a}.`, 'bad', 'crime');
-}
-function adoecer(nome) {
-  if (S.doencas.includes(nome)) return;
-  S.doencas.push(nome);
-  line(`Você foi ${G('diagnosticado', 'diagnosticada')} com ${nome.toLowerCase()}. Dá para tratar em Atividades.`, 'bad', 'saude');
-}
-const valorBens = () => S.bens.reduce((t, b) => t + b.valor, 0);
-const dividaBens = () => S.bens.reduce((t, b) => t + b.parcela * b.anos, 0);
-const totalInv = () => S.inv.poupanca + S.inv.acoes + S.inv.cripto;
-const patrimonio = () => S.dinheiro + totalInv() + valorBens() - dividaBens() - S.fies;
-
-// ================= nova vida =================
-function baseVida(o) {
-  return Object.assign({
-    versao: 2, nome: '', sobrenome: '', sexo: 'M', interesse: 'A', cidade: pick(CIDADES), pais: 'Brasil', reg: R(100000, 999999), geracao: 1,
-    idade: 0, ano: ANO_INICIAL, nasc: ANO_INICIAL, vivo: true, causa: '', fita: null,
-    st: { felicidade: R(60, 95), saude: R(70, 100), inteligencia: R(15, 95), aparencia: R(15, 95) },
-    dinheiro: 0, escola: null, formacao: 'nenhuma', cursos: [], faculdade: null,
-    emprego: null, aposentado: false, pensao: 0, ultimoTrabalho: '',
-    moradia: 'pais', bens: [], inv: { poupanca: 0, acoes: 0, cripto: 0 }, plano: false, doencas: [],
-    seguidores: 0, preso: 0, ficha: 0, fies: 0, flags: {},
-    rel: [], feitosAno: {}, feitos: [], ultimoEv: {}, fila: [], log: []
-  }, o);
-}
-function novaVida(opts = {}) {
-  const sexo = opts.sexo || pick(['M', 'F']);
-  const sobPai = pick(SOB), sobMae = pick(SOB);
-  const primeiro = (opts.nome || '').trim() || (sexo === 'F' ? pick(NF) : pick(NM));
-  const mae = pessoa('mae', 'F', R(19, 40), sobMae);
-  const pai = pessoa('pai', 'M', R(20, 45), sobPai);
-  S = baseVida({ nome: `${primeiro} ${sobMae} ${sobPai}`, sobrenome: sobPai, sexo, interesse: opts.interesse || 'A', rel: [mae, pai] });
-  if (chance(.55)) S.rel.push(pessoa('irmao', pick(['M', 'F']), R(1, 8), sobPai));
-  addAno();
-  CUR_CAT = 'familia';
-  line(`Você nasceu em ${S.cidade}, em ${ANO_INICIAL}. ${G('Bem-vindo', 'Bem-vinda')} ao mundo!`, 'good');
-  line(`Sua mãe é ${mae.nome} (${mae.idade} anos) e seu pai é ${pai.nome} (${pai.idade} anos).`);
-  const ir = achar('irmao');
-  if (ir) line(`Você tem ${ir.sexo === 'F' ? 'uma irmã mais velha' : 'um irmão mais velho'}: ${ir.nome}.`);
-  CUR_CAT = null;
-  deltas = {};
-  salvar(); render();
-}
-function novaVidaLegado(id) {
-  const ant = S, f = ant.rel.find(r => r.id === id);
-  const herdeiros = ant.rel.filter(r => r.tipo === 'filho' && r.vivo).length || 1;
-  const heranca = Math.max(0, Math.round(patrimonio() / herdeiros));
-  const outro = ant.rel.find(r => r.tipo === 'parceiro' && r.vivo);
-  const rel = [{ id: uid(), tipo: ant.sexo === 'F' ? 'mae' : 'pai', sexo: ant.sexo, nome: ant.nome, idade: ant.idade, rel: f.rel, vivo: false }];
-  if (outro) rel.push({ id: uid(), tipo: outro.sexo === 'F' ? 'mae' : 'pai', sexo: outro.sexo, nome: outro.nome, idade: outro.idade, rel: R(60, 90), vivo: true });
-  ant.rel.filter(r => r.tipo === 'filho' && r.id !== id).forEach(r => rel.push(Object.assign({}, r, { tipo: 'irmao' })));
-  const idade = f.idade;
-  S = baseVida({
-    nome: f.nome, sobrenome: ant.sobrenome, sexo: f.sexo, interesse: ant.interesse, cidade: ant.cidade, pais: ant.pais,
-    geracao: (ant.geracao || 1) + 1, idade, ano: ant.ano, nasc: ant.ano - idade, dinheiro: heranca, rel,
-    st: { felicidade: R(40, 70), saude: R(60, 100), inteligencia: clamp(ant.st.inteligencia + R(-25, 20)), aparencia: R(15, 95) },
-    moradia: idade >= 18 ? 'aluguel' : 'pais'
-  });
-  if (idade >= 6 && idade < 15) S.escola = 'fundamental';
-  else if (idade >= 15 && idade < 18) { S.escola = 'medio'; S.formacao = 'fundamental'; }
-  else if (idade >= 18) { S.formacao = 'medio'; S.feitos.push('fimEscola'); }
-  S.feitos.push(...EVENTOS_TODOS.filter(e => e.fixo && e.max < idade).map(e => e.id));
-  addAno();
-  CUR_CAT = 'familia';
-  line(`Você é ${f.sexo === 'F' ? 'a filha' : 'o filho'} de ${ant.nome}, que morreu aos ${ant.idade} anos.`);
-  if (heranca > 0) line(`Você herdou ${fmt(heranca)}.`, 'good', 'dinheiro');
-  line(`A história da família continua: ${S.geracao}ª geração.`);
-  CUR_CAT = null; deltas = {};
-  salvar(); render();
-}
-
-// ================= eventos =================
-// Eventos de sistema (faculdade, mudança de país). Os eventos aleatórios ficam em eventos.js.
-const EVENTOS_SISTEMA = [
-  { id: 'fimEscola', cat: 'escola', min: 18, max: 18, once: true, interno: true,
-    texto: () => 'Você terminou o ensino médio. E agora?',
-    escolhas: [
-      { t: 'Quero fazer faculdade', fx: s => s.fila.push({ id: 'curso', d: {} }) },
-      { t: 'Vou trabalhar', fx: () => line('Você decidiu ir direto para o mercado de trabalho.') }
-    ] },
-  { id: 'curso', cat: 'escola', interno: true,
-    texto: () => 'Qual curso você quer fazer?',
-    escolhas: () => Object.keys(CURSOS).map(c => ({ t: `${c} · ${CURSOS[c].anos} anos`, fx: s => s.fila.push({ id: 'tipoFac', d: { curso: c } }) }))
-      .concat([{ t: 'Mudei de ideia', fx: () => line('Você desistiu da faculdade por enquanto.') }]) },
-  { id: 'tipoFac', cat: 'escola', interno: true,
-    texto: (s, d) => `${d.curso}: como você vai estudar?`,
-    escolhas: (s, d) => [
-      { t: 'Prestar vestibular para a federal (grátis)', fx: s => {
-        if (s.st.inteligencia + R(-12, 12) >= CURSOS[d.curso].nota) { s.faculdade = { curso: d.curso, ano: 0, tipo: 'pública' }; mod('felicidade', 10); line(`Você passou no vestibular de ${d.curso} na federal!`, 'good'); }
-        else { mod('felicidade', -6); line(`Você não passou no vestibular de ${d.curso}. Dá para tentar de novo no ano que vem, na aba Carreira.`, 'bad'); }
-      } },
-      { t: 'Tentar bolsa integral do ProUni', fx: s => {
-        if (s.st.inteligencia + R(-10, 10) >= 55 && chance(.6)) { s.faculdade = { curso: d.curso, ano: 0, tipo: 'bolsa' }; mod('felicidade', 8); line(`Você ganhou bolsa integral do ProUni para ${d.curso}!`, 'good'); }
-        else { mod('felicidade', -4); line('Você não conseguiu a bolsa do ProUni.', 'bad'); }
-      } },
-      { t: `Particular com Fies (paga depois de formad${G('o', 'a')})`, fx: s => { s.faculdade = { curso: d.curso, ano: 0, tipo: 'particular', fies: true }; mod('felicidade', 5); line(`Você começou ${d.curso} numa particular, financiada pelo Fies.`); } },
-      { t: `Particular pagando (${fmt(preco(20000))} por ano)`, fx: s => { s.faculdade = { curso: d.curso, ano: 0, tipo: 'particular' }; mod('felicidade', 5); line(`Você começou ${d.curso} numa faculdade particular.`); } },
-      { t: 'Desistir', fx: () => line('Você desistiu da faculdade por enquanto.') }
-    ] },
-  { id: 'emigrar', cat: 'vida', interno: true,
-    texto: () => `Para onde você quer se mudar? A viagem e o visto custam ${fmt(15000)}. Com faculdade, o visto sai mais fácil.`,
-    escolhas: s => Object.keys(PAISES).filter(p => p !== s.pais).map(p => ({ t: p, fx: s => {
-      if (s.dinheiro < 15000) { line('Você não tinha dinheiro para a mudança.', 'bad'); return; }
-      const ch = p === 'Brasil' ? 1 : .35 + (s.formacao === 'superior' ? .35 : 0) + s.st.inteligencia / 400;
-      if (chance(ch)) {
-        grana(-15000);
-        if (s.emprego) { s.ultimoTrabalho = s.emprego.titulo; s.emprego = null; }
-        s.pais = p; s.moradia = 'aluguel'; if (p !== 'Brasil') setFlag('emigrou');
-        s.fila.push({ id: '__marco', d: { titulo: p === 'Brasil' ? 'De volta ao Brasil' : `Nova vida: ${p}`, texto: p === 'Brasil' ? 'Você voltou para o Brasil. Que saudade do feijão!' : `Você se mudou para ${p}. Os valores agora aparecem na moeda local.` } });
-        line(p === 'Brasil' ? 'Você voltou a morar no Brasil.' : `Você se mudou para ${p}.`, 'good');
-      } else { grana(-3000); mod('felicidade', -5); line(`O visto para ${p} foi negado.`, 'bad'); }
-    } })).concat([{ t: 'Ficar onde estou', fx: () => line('Você desistiu da mudança.') }]) }
-];
-const EVENTOS_TODOS = EVENTOS_SISTEMA.concat(typeof EVENTOS !== 'undefined' ? EVENTOS : []);
-const EV = Object.fromEntries(EVENTOS_TODOS.map(e => [e.id, e]));
-
-function elegivel(e) {
-  if (e.interno || e.fixo) return false;
-  if (S.idade < (e.min ?? 0) || S.idade > (e.max ?? 120)) return false;
-  if (!!e.prisao !== S.preso > 0) return false;
-  if (e.once && S.feitos.includes(e.id)) return false;
-  if (!e.once && S.ultimoEv[e.id] !== undefined && S.idade - S.ultimoEv[e.id] < (e.gap ?? 6)) return false;
-  if (e.cond) { try { if (!e.cond(S)) return false; } catch (err) { return false; } }
-  return true;
-}
-function disparar(e, data) {
-  if (e.once) S.feitos.push(e.id);
-  S.ultimoEv[e.id] = S.idade;
-  CUR_CAT = e.cat || 'vida';
-  try {
-    const d = data || (e.prep ? e.prep(S) : {});
-    if (e.escolhas) S.fila.push({ id: e.id, d }); else e.fx(S, d);
-  } catch (err) { console.warn('Evento com erro:', e.id, err); }
-  CUR_CAT = null;
-}
-function sortearEventos() {
-  EVENTOS_TODOS.filter(e => e.fixo && S.idade >= e.min && S.idade <= e.max && !S.feitos.includes(e.id)).forEach(e => disparar(e));
-  const ok = EVENTOS_TODOS.filter(elegivel);
-  let n = chance(.7) ? 1 : 0;
-  if (chance(.25)) n++;
-  for (let k = 0; k < n && ok.length; k++) {
-    const e = ok.splice(Math.floor(Math.random() * ok.length), 1)[0];
-    if (e.p && !chance(e.p)) continue;
-    disparar(e);
-  }
-}
-
-// ================= passar o ano =================
-function avancar() {
-  if (!S.vivo || S.fila.length) return;
-  deltas = {};
-  S.idade++; S.ano++; S.feitosAno = {};
-  addAno();
-  const preso = S.preso > 0;
-  if (preso) {
-    S.preso--;
-    if (S.preso === 0) { mod('felicidade', 10); line('Você cumpriu a pena e saiu da prisão.', 'good', 'crime'); }
-  }
-  envelhecerFamilia();
-  if (!preso) { escola(); trabalho(); }
-  financas();
-  saude();
-  deriva();
-  if (S.idade === 18 && S.formacao === 'medio' && !S.feitos.includes('fimEscola') && !S.preso) disparar(EV.fimEscola);
-  sortearEventos();
-  morte();
-  const ano = S.log[S.log.length - 1].l;
-  if (!ano.length) line('Um ano tranquilo.', 'quiet');
-  salvar(); render();
-  const ruins = ano.filter(x => x.tone === 'bad').length, bons = ano.filter(x => x.tone === 'good').length;
-  if (!S.vivo) som('ruim'); else if (!S.fila.length) som(ruins > bons ? 'ruim' : 'ano');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function envelhecerFamilia() {
-  S.rel.forEach(r => {
-    if (!r.vivo) return;
-    r.idade++;
-    r.rel = clamp(r.rel - R(0, 4));
-    const morre = r.tipo === 'pet' ? (r.idade > 10 && chance((r.idade - 10) / 8)) : (r.idade > 60 && chance(Math.pow((r.idade - 60) / 40, 3)));
-    if (morre) {
-      r.vivo = false;
-      mod('felicidade', -R(8, 20));
-      line(`${quem(r)} morreu aos ${r.idade} anos.`, 'bad', 'familia');
-      if ((r.tipo === 'mae' || r.tipo === 'pai') && chance(.5)) { const v = R(5, 80) * 1000; grana(v); line(`Você recebeu ${fmt(v)} de herança.`, '', 'dinheiro'); }
-    } else if (r.tipo === 'filho' && r.idade === 18) line(`${r.nome} fez 18 anos e saiu de casa.`, '', 'familia');
-  });
-}
-function escola() {
-  CUR_CAT = 'escola';
-  if (S.idade === 6) { S.escola = 'fundamental'; line('Você entrou no ensino fundamental.'); }
-  else if (S.idade === 15 && S.escola === 'fundamental') { S.escola = 'medio'; S.formacao = 'fundamental'; line('Você começou o ensino médio.'); }
-  else if (S.idade >= 18 && S.escola === 'medio') { S.escola = null; S.formacao = 'medio'; mod('felicidade', 5); marco('Formatura do ensino médio', 'Você terminou a escola! Agora o mundo é seu.'); }
-  if (S.escola) mod('inteligencia', R(0, 3));
-  if (S.faculdade) {
-    S.faculdade.ano++;
-    mod('inteligencia', R(1, 4));
-    const c = S.faculdade.curso;
-    if (S.faculdade.ano >= CURSOS[c].anos) {
-      S.cursos.push(c); S.formacao = 'superior'; S.faculdade = null;
-      mod('felicidade', 10);
-      marco(`Formatura em ${c}`, `Você se formou em ${c}! Pode jogar o capelo para cima.`);
-      if (S.emprego && S.emprego.id === 'estagio') {
-        const cargo = CARREIRAS.find(x => x.curso === c);
-        if (cargo && chance(.6)) { S.emprego = { id: cargo.id, titulo: G(cargo.m, cargo.f), sal: Math.round(cargo.sal * PAISES[S.pais].sal), anos: 0, desemp: R(55, 70) }; S.ultimoTrabalho = S.emprego.titulo; line(`A empresa do estágio te efetivou como ${S.emprego.titulo.toLowerCase()}.`, 'good', 'trabalho'); }
-      }
-    }
-  }
-  CUR_CAT = null;
-}
-function trabalho() {
-  CUR_CAT = 'trabalho';
-  if (S.aposentado) grana(S.pensao);
-  else if (!S.emprego && S.idade >= 65 && flag('trabalhou')) {
-    S.aposentado = true; S.pensao = preco(20000);
-    line(`Você começou a receber aposentadoria: ${fmt(S.pensao)} por ano.`, 'good');
-  }
-  const e = S.emprego;
-  if (e) {
-    grana(e.sal);
-    e.anos++;
-    e.desemp = clamp(e.desemp + R(-8, 6));
-    if (e.id === 'musico') S.seguidores += R(100, 3000);
-    if (e.id === 'fut' && S.idade >= 36) { S.ultimoTrabalho = e.titulo; S.emprego = null; mod('felicidade', -4); line('Você pendurou as chuteiras.', '', 'fama'); }
-    else if (e.desemp > 75 && chance(.3)) { e.sal = Math.round(e.sal * 1.12); line(`Seu chefe gostou do seu trabalho e te deu aumento: ${fmt(e.sal)} por ano.`, 'good'); }
-    else if (e.desemp < 20 && e.id !== 'servidor' && chance(.45)) { S.ultimoTrabalho = e.titulo; line(`Você foi ${G('demitido', 'demitida')} do emprego de ${e.titulo.toLowerCase()}.`, 'bad'); mod('felicidade', -10); S.emprego = null; }
-    if (S.emprego && S.fies > 0) { const p = Math.min(S.fies, Math.round(S.emprego.sal * .1)); S.fies -= p; grana(-p); if (S.fies === 0) line('Você quitou o Fies!', 'good', 'dinheiro'); }
-  }
-  if (S.seguidores >= 10000) { const v = Math.round(S.seguidores * .6); grana(v); if (v > 20000) line(`As redes sociais renderam ${fmt(v)} em publicidade.`, '', 'fama'); }
-  CUR_CAT = null;
-}
-function custoMoradia() { return S.idade < 18 ? 0 : preco({ pais: 3000, aluguel: 18000, propria: 6000 }[S.moradia]); }
-function custoAnual() {
-  if (S.idade < 18 || S.preso) return 0;
-  let c = custoMoradia();
-  c += preco(8000) * filhosVivos().filter(f => f.idade < 18).length;
-  c += preco(4000) * S.bens.filter(b => b.tipo === 'carro').length;
-  if (S.plano) c += preco(6000);
-  if (flag('fumante')) c += preco(3000);
-  return c;
-}
-function financas() {
-  CUR_CAT = 'dinheiro';
-  grana(-custoAnual());
-  if (S.faculdade && S.faculdade.tipo === 'particular') { const c = preco(20000); if (S.faculdade.fies) S.fies += c; else grana(-c); }
-  S.bens.forEach(b => { if (b.anos > 0) { grana(-b.parcela); b.anos--; if (b.anos === 0) line(`Você quitou o financiamento: ${b.nome.toLowerCase()}.`, 'good'); } });
-  S.bens.forEach(b => { b.valor = Math.round(b.valor * (b.tipo === 'imovel' ? 1.04 : .88)); });
-  if (totalInv() > 0) {
-    const antes = totalInv();
-    S.inv.poupanca = Math.round(S.inv.poupanca * 1.06);
-    S.inv.acoes = Math.round(S.inv.acoes * (1 + R(-25, 35) / 100));
-    S.inv.cripto = Math.round(S.inv.cripto * (1 + R(-75, 100) / 100));
-    const dif = totalInv() - antes;
-    line(dif >= 0 ? `Seus investimentos renderam ${fmt(dif)}.` : `Seus investimentos perderam ${fmt(-dif)}.`, dif >= 0 ? '' : 'bad');
-  }
-  if (S.dinheiro < 0) {
-    const juros = Math.round(-S.dinheiro * .1); grana(-juros);
-    mod('felicidade', -R(2, 6));
-    if (chance(.5)) line(`Você está ${G('endividado', 'endividada')}. Os juros do ano foram ${fmt(juros)}.`, 'bad');
-  }
-  CUR_CAT = null;
-}
-function saude() {
-  CUR_CAT = 'saude';
-  S.doencas.forEach(n => { mod('saude', -DOENCAS[n].grav); if (DOENCAS[n].fel) mod('felicidade', -DOENCAS[n].fel); });
-  if (flag('fumante')) { mod('saude', -2); mod('aparencia', -1); }
-  if (flag('alcool')) { mod('saude', -2); mod('felicidade', R(-3, 1)); }
-  CUR_CAT = null;
-}
-function deriva() {
-  mod('felicidade', R(-3, 3));
-  if (S.idade > 35) mod('saude', -R(0, 3));
-  if (S.idade > 60) mod('saude', -R(1, 4));
-  if (S.idade > 30) mod('aparencia', -R(0, 2));
-  if (S.idade > 70) mod('inteligencia', -R(0, 2));
-  if (S.moradia === 'pais' && S.idade > 25) mod('felicidade', -2);
-  if (S.st.felicidade < 15 && chance(.3)) line('Você anda muito pra baixo. Talvez seja bom conversar com alguém ou meditar.', 'bad', 'saude');
-}
-function morte() {
-  let p = 0;
-  if (S.idade >= 55) p += Math.pow((S.idade - 55) / 45, 3) * .9;
-  if (S.st.saude < 20) p += (20 - S.st.saude) / 100;
-  if (S.st.saude <= 0 || S.idade >= 115) p = 1;
-  if (!chance(p)) return;
-  S.vivo = false; S.fila = [];
-  S.causa = S.doencas.includes('Câncer') ? 'de câncer' : S.st.saude < 20 ? 'de problemas de saúde' : pick(['enquanto dormia', 'de um infarto', 'de velhice', 'cercad' + G('o', 'a') + ' pela família']);
-  line(`Você morreu ${S.causa}, aos ${S.idade} anos.`, 'bad');
-  S.fita = fita();
-  const vidas = lerLS(VIDAS_KEY, []);
-  vidas.unshift({ nome: S.nome, idade: S.idade, fita: S.fita[0], ger: S.geracao, ano: S.ano });
-  gravarLS(VIDAS_KEY, vidas.slice(0, 30));
-}
-function fita() {
-  const pt = patrimonio(), filhos = S.rel.filter(r => r.tipo === 'filho').length;
-  if (pt >= 1e7) return ['Magnata', 'Morreu com mais de 10 milhões de patrimônio.'];
-  if (S.seguidores >= 1e6) return ['Celebridade', 'Milhões de pessoas acompanhavam cada passo.'];
-  if (flag('profissional')) return ['Craque', 'Viveu do futebol, como sonhava no campinho.'];
-  if (pt >= 1e6) return [G('Milionário', 'Milionária'), 'Terminou a vida com mais de um milhão.'];
-  if (S.cursos.length >= 2 || temCurso('Medicina')) return [G('Acadêmico', 'Acadêmica'), 'Estudou como poucos.'];
-  if (S.ficha >= 2) return ['Fora da lei', 'A polícia conhecia pelo nome.'];
-  if (filhos >= 3) return ['Família', 'Deixou uma família grande.'];
-  if (flag('emigrou')) return [G('Cidadão do mundo', 'Cidadã do mundo'), 'Viveu longe de onde nasceu.'];
-  if (S.idade >= 95) return [G('Longevo', 'Longeva'), 'Passou dos 95 anos.'];
-  if (S.idade < 30) return ['Vida breve', 'Partiu cedo demais.'];
-  if (S.st.felicidade >= 80) return ['Feliz', 'Morreu de bem com a vida.'];
-  return ['Vida comum', 'Uma vida tranquila, sem grandes reviravoltas.'];
-}
-
-// ================= conquistas =================
-const CONQUISTAS = [
-  { id: 'milionario', nome: 'Milionário', desc: 'Patrimônio de 1 milhão de reais', ok: () => patrimonio() >= 1e6 },
-  { id: 'centenario', nome: 'Centenário', desc: 'Chegar aos 100 anos', ok: () => S.idade >= 100 },
-  { id: 'doutor', nome: 'Doutor', desc: 'Se formar em Medicina', ok: () => temCurso('Medicina') },
-  { id: 'diplomas', nome: 'Eterno estudante', desc: 'Ter dois diplomas', ok: () => S.cursos.length >= 2 },
-  { id: 'medalha', nome: 'Gênio', desc: 'Medalha na Olimpíada de Matemática', ok: () => flag('medalha') },
-  { id: 'casou', nome: 'Sim, aceito', desc: 'Casar', ok: () => flag('casou') },
-  { id: 'familia', nome: 'Família grande', desc: 'Ter 4 filhos', ok: () => S.rel.filter(r => r.tipo === 'filho').length >= 4 },
-  { id: 'dinastia', nome: 'Dinastia', desc: 'Chegar à 3ª geração da família', ok: () => S.geracao >= 3 },
-  { id: 'tutor', nome: 'Melhor amigo', desc: 'Adotar um cachorro', ok: () => flag('tutor') },
-  { id: 'influencer', nome: 'Influencer', desc: 'Ter 1 milhão de seguidores', ok: () => S.seguidores >= 1e6 },
-  { id: 'craque', nome: 'Craque', desc: 'Virar jogador de futebol profissional', ok: () => flag('profissional') },
-  { id: 'rockstar', nome: 'Rockstar', desc: 'Assinar com uma gravadora', ok: () => flag('gravadora') },
-  { id: 'empreendedor', nome: 'Empreendedor', desc: 'Abrir um negócio de sucesso', ok: () => flag('negocio') },
-  { id: 'casaPropria', nome: 'Casa própria', desc: 'Comprar um imóvel', ok: () => flag('imovel') },
-  { id: 'sortudo', nome: 'Sortudo', desc: 'Ganhar na Mega-Sena', ok: () => flag('mega') },
-  { id: 'aposentado', nome: 'Missão cumprida', desc: 'Se aposentar', ok: () => S.aposentado },
-  { id: 'expatriado', nome: 'Expatriado', desc: 'Morar em outro país', ok: () => flag('emigrou') },
-  { id: 'saudavel', nome: 'Corpo de atleta', desc: 'Chegar aos 80 com saúde acima de 80', ok: () => S.idade >= 80 && S.st.saude >= 80 },
-  { id: 'endividado', nome: 'No vermelho', desc: 'Dever mais de 100 mil reais', ok: () => S.dinheiro <= -100000 },
-  { id: 'preso', nome: 'Atrás das grades', desc: 'Ser preso', ok: () => flag('preso') },
-  { id: 'fugitivo', nome: 'Fugitivo', desc: 'Fugir da prisão', ok: () => flag('fugitivo') }
-];
-let CONQ = lerLS(CONQ_KEY, []);
-function checarConquistas() {
-  const novas = CONQUISTAS.filter(c => !CONQ.includes(c.id) && (() => { try { return c.ok(); } catch (e) { return false; } })());
-  if (!novas.length) return;
-  novas.forEach(c => CONQ.push(c.id));
-  gravarLS(CONQ_KEY, CONQ);
-  toast(`Conquista: ${novas.map(c => c.nome).join(', ')}`);
-  som('conquista');
-}
-
-// ================= atividades =================
-const ATIVIDADES = [
-  { id: 'estudar', g: 'Mente e corpo', nome: 'Estudar mais', desc: 'Inteligência', min: 6, prisao: true, fx: () => { mod('inteligencia', R(2, 6)); mod('felicidade', -1); line('Você passou horas estudando.', '', 'escola'); } },
-  { id: 'ler', g: 'Mente e corpo', nome: 'Ler um livro', desc: 'Inteligência e felicidade', min: 7, prisao: true, fx: () => { mod('inteligencia', R(1, 3)); mod('felicidade', R(1, 3)); line(`Você leu "${pick(LIVROS)}".`, '', 'escola'); } },
-  { id: 'meditar', g: 'Mente e corpo', nome: 'Meditar', desc: 'Felicidade', min: 10, prisao: true, fx: () => { mod('felicidade', R(3, 7)); line('Você meditou e se sentiu em paz.', '', 'saude'); } },
-  { id: 'academia', g: 'Mente e corpo', nome: 'Academia', desc: 'Saúde e aparência', min: 13, custo: 1200, prisao: true, fx: () => { mod('saude', R(3, 7)); mod('aparencia', R(1, 3)); line('Você treinou pesado o ano todo.', '', 'saude'); } },
-  { id: 'postar', g: 'Lazer', nome: 'Postar nas redes', desc: 'Ganhar seguidores', min: 13, fx: () => {
-    let g = Math.round((10 + S.st.aparencia) * R(1, 12) * (1 + S.seguidores / 20000));
-    if (chance(.08)) { g *= R(10, 40); line(`Um post seu explodiu: mais ${num(g)} seguidores!`, 'good', 'fama'); }
-    else line(`Você postou o ano inteiro e ganhou ${num(g)} seguidores.`, '', 'fama');
-    S.seguidores += g; mod('felicidade', 1);
-  } },
-  { id: 'voluntario', g: 'Lazer', nome: 'Trabalho voluntário', desc: 'Felicidade', min: 14, fx: () => { mod('felicidade', R(3, 6)); line('Você ajudou numa ONG do bairro.', 'good'); } },
-  { id: 'balada', g: 'Lazer', nome: 'Sair à noite', desc: 'Felicidade, talvez um amor', min: 16, custo: 200, fx: () => { mod('felicidade', R(4, 8)); mod('saude', -R(0, 3)); if (chance(.25)) conhecerAlguem('numa balada'); else line('Você saiu com os amigos e dançou até de manhã.'); } },
-  { id: 'viajar', g: 'Lazer', nome: 'Viajar', desc: 'Muita felicidade', min: 18, custo: 3000, fx: () => { mod('felicidade', R(8, 14)); line(`Você viajou para ${pick(DESTINOS)}.`, 'good'); } },
-  { id: 'loteria', g: 'Lazer', nome: 'Jogar na Mega-Sena', desc: 'Sorte grande?', min: 18, custo: 5, fx: () => {
-    if (chance(1 / 3000)) { const v = R(5, 80) * 1000000; grana(v); setFlag('mega'); mod('felicidade', 30); marco('Mega-Sena!', `Você acertou os seis números e ganhou ${fmt(v)}!`); }
-    else if (chance(.05)) { grana(1200); line(`Você acertou a quadra e ganhou ${fmt(1200)}.`, 'good', 'dinheiro'); }
-    else line('Não deu nada na Mega-Sena.', '', 'dinheiro');
-  } },
-  { id: 'medico', g: 'Saúde', nome: 'Ir ao médico', desc: 'Check-up, recupera saúde', min: 0, custo: 300, fx: () => { mod('saude', R(5, 14) + (S.plano ? 4 : 0)); line('Você foi ao médico e fez um check-up.', '', 'saude'); } },
-  { id: 'plastica', g: 'Saúde', nome: 'Cirurgia plástica', desc: 'Aparência, com algum risco', min: 18, custo: 12000, fx: () => {
-    if (chance(.8)) { mod('aparencia', R(8, 15)); line('A plástica ficou ótima.', 'good', 'saude'); } else { mod('aparencia', -10); mod('saude', -5); line('A plástica deu errado.', 'bad', 'saude'); }
-  } },
-  { id: 'largarCigarro', g: 'Saúde', nome: 'Largar o cigarro', desc: 'Difícil, mas possível', min: 0, mostra: () => flag('fumante'), fx: () => {
-    if (chance(.3)) { setFlag('fumante', false); mod('felicidade', 5); line('Você largou o cigarro!', 'good', 'saude'); } else line('Você tentou largar o cigarro e recaiu.', 'bad', 'saude');
-  } },
-  { id: 'pararBeber', g: 'Saúde', nome: 'Parar de beber', desc: 'Difícil, mas possível', min: 0, mostra: () => flag('alcool'), fx: () => {
-    if (chance(.3)) { setFlag('alcool', false); mod('felicidade', 5); line('Você parou de beber!', 'good', 'saude'); } else line('Você tentou parar de beber e recaiu.', 'bad', 'saude');
-  } },
-  { id: 'reabilitacao', g: 'Saúde', nome: 'Clínica de reabilitação', desc: 'Alta chance de largar os vícios', min: 16, custo: 15000, mostra: () => flag('fumante') || flag('alcool'), fx: () => {
-    if (chance(.75)) { setFlag('fumante', false); setFlag('alcool', false); mod('felicidade', 8); line('Você saiu da clínica livre dos vícios.', 'good', 'saude'); } else line('A reabilitação não funcionou desta vez.', 'bad', 'saude');
-  } },
-  { id: 'emigrar', g: 'Mudanças', nome: 'Mudar de país', desc: 'Recomeçar em outro lugar', min: 18, fx: () => { S.fila.push({ id: 'emigrar', d: {} }); } },
-  { id: 'pichar', g: 'Crimes', nome: 'Pichar um muro', desc: 'Adrenalina', min: 12, fx: () => {
-    mod('felicidade', 3);
-    if (chance(.25)) { if (S.idade < 18) { paisVivos().forEach(r => { r.rel = clamp(r.rel - 10); }); line(`Você foi ${G('pego', 'pega')} pichando e seus pais tiveram que pagar a pintura.`, 'bad', 'crime'); } else { grana(-2000); S.ficha++; line(`Você foi ${G('pego', 'pega')} pichando e pagou multa.`, 'bad', 'crime'); } }
-    else line('Você pichou seu nome no viaduto.', '', 'crime');
-  } },
-  { id: 'furtar', g: 'Crimes', nome: 'Furtar numa loja', desc: 'Pouco dinheiro, risco médio', min: 12, fx: () => {
-    if (chance(.3)) prender(1, 'furto'); else { const v = R(5, 50) * 10; grana(v); line(`Você furtou coisas que valiam ${fmt(v)}.`, '', 'crime'); }
-  } },
-  { id: 'pirata', g: 'Crimes', nome: 'Vender produto pirata', desc: 'Dinheiro médio, risco médio', min: 16, fx: () => {
-    if (chance(.25)) prender(2, 'pirataria'); else { const v = R(2, 8) * 1000; grana(v); line(`Você faturou ${fmt(v)} vendendo produto pirata.`, '', 'crime'); }
-  } },
-  { id: 'banco', g: 'Crimes', nome: 'Assaltar um banco', desc: 'Muito dinheiro, risco altíssimo', min: 18, fx: () => {
-    if (chance(.25)) { const v = R(100, 800) * 1000; grana(v); line(`O assalto deu certo. Você levou ${fmt(v)}.`, '', 'crime'); }
-    else prender(R(6, 12), 'assalto a banco');
-  } }
-];
-function custoAtividade(a) {
-  if (!a.custo || S.idade < 18 || S.preso) return 0;
-  if (a.id === 'medico' && S.plano) return 0;
-  return preco(a.custo);
-}
-
-// ================= pessoas =================
-const ACOES_REL = [
-  { id: 'conversar', nome: 'Conversar', so: r => r.tipo !== 'pet', fx: r => { r.rel = clamp(r.rel + R(3, 8)); mod('felicidade', R(1, 3)); line(`Você teve uma boa conversa com ${quem(r)}.`); } },
-  { id: 'tempo', nome: 'Passar tempo juntos', so: r => r.tipo !== 'pet' && r.tipo !== 'ex', fx: r => { r.rel = clamp(r.rel + R(6, 12)); mod('felicidade', R(2, 5)); line(`Você passou um dia inteiro com ${quem(r)}.`, 'good'); } },
-  { id: 'presente', nome: 'Dar um presente', so: r => r.tipo !== 'pet' && S.idade >= 18, fx: r => { grana(-preco(300)); r.rel = clamp(r.rel + R(8, 14)); line(`Você deu um presente para ${quem(r)}.`); } },
-  { id: 'brincar', nome: 'Brincar', so: r => r.tipo === 'pet', fx: r => { r.rel = clamp(r.rel + 8); mod('felicidade', R(3, 6)); line(`Você brincou de bolinha com ${r.nome}.`, 'good'); } },
-  { id: 'dinheiro', nome: 'Pedir dinheiro', so: r => r.tipo === 'mae' || r.tipo === 'pai', fx: r => {
-    if (chance(r.rel / 130)) { const v = R(5, 50) * 10 * (S.idade >= 18 ? 10 : 1); grana(v); line(`${quem(r)} te deu ${fmt(v)}.`, 'good', 'dinheiro'); }
-    else { r.rel = clamp(r.rel - 3); line(`${quem(r)} disse que dinheiro não dá em árvore.`); } } },
-  { id: 'discutir', nome: 'Discutir', so: r => r.tipo !== 'pet', fx: r => { r.rel = clamp(r.rel - R(8, 18)); mod('felicidade', -R(1, 4)); line(`Você brigou feio com ${quem(r)}.`, 'bad'); } },
-  { id: 'casar', nome: 'Pedir em casamento', so: r => r.tipo === 'parceiro' && !r.casado && S.idade >= 18, fx: r => {
-    if (r.rel >= 65 && chance(.8)) casar(r);
-    else { r.rel = clamp(r.rel - 15); mod('felicidade', -8); line(`${r.nome} disse que ainda não está pront${r.sexo === 'F' ? 'a' : 'o'}.`, 'bad', 'amor'); } } },
-  { id: 'filho', nome: 'Tentar ter um filho', so: r => r.tipo === 'parceiro' && S.idade >= 18 && S.idade <= 50, fx: () => {
-    if (chance(.5)) nascerFilho(); else line('Não foi desta vez. Vocês podem tentar de novo no ano que vem.', '', 'familia'); } },
-  { id: 'terminar', nome: 'Terminar', so: r => r.tipo === 'parceiro', fx: r => terminarRelacao(r) }
-];
-
-// ================= carreira =================
-const tituloCarreira = c => G(c.m, c.f);
-function podeCandidatar(c) {
-  if (S.preso) return 'Você está na prisão';
-  if (S.idade < c.idade) return `A partir de ${c.idade} anos`;
-  if (c.idadeMax && S.idade > c.idadeMax) return `Até ${c.idadeMax} anos`;
-  if (c.estudante) return S.faculdade && S.faculdade.ano >= 1 ? '' : 'Para universitários a partir do 2º ano';
-  if (c.flag && !flag(c.flag)) return c.flagMsg;
-  if (S.escola && c.form !== 'nenhuma') return 'Termine a escola primeiro';
-  if (c.curso && !temCurso(c.curso)) return `Exige faculdade de ${c.curso}`;
-  if (c.form && FORM[S.formacao] < FORM[c.form]) return `Exige ${FORM_NOME[c.form].toLowerCase()}`;
-  if (c.concurso && S.ficha > 0) return 'Exige ficha criminal limpa';
-  return '';
-}
-function candidatar(id) {
-  const c = CARREIRAS.find(x => x.id === id);
-  S.feitosAno['vaga:' + id] = true;
-  CUR_CAT = 'trabalho';
-  let p = (c.curso ? .7 : .6) + (S.st.inteligencia - 50) / 200 + (S.st.aparencia - 50) / 400 - .25 * Math.min(S.ficha, 2);
-  if (c.concurso) p = .15 + S.st.inteligencia / 300;
-  if (c.id === 'fut') p = S.st.saude / 120;
-  if (chance(p)) {
-    let sal = c.sal;
-    if (c.id === 'fut') { sal = [36000, 120000, 480000, 2400000][Math.min(3, Math.floor(R(0, S.st.saude) / 28))]; setFlag('profissional'); }
-    S.emprego = { id: c.id, titulo: tituloCarreira(c), sal: Math.round(sal * PAISES[S.pais].sal), anos: 0, desemp: R(45, 65) };
-    S.ultimoTrabalho = S.emprego.titulo;
-    mod('felicidade', 6);
-    if (!flag('trabalhou')) { setFlag('trabalhou'); marco('Primeiro emprego', `Você foi ${G('contratado', 'contratada')} como ${S.emprego.titulo.toLowerCase()}. Salário: ${fmt(S.emprego.sal)} por ano.`); }
-    else line(`Você foi ${G('contratado', 'contratada')} como ${S.emprego.titulo.toLowerCase()}. Salário: ${fmt(S.emprego.sal)} por ano.`, 'good');
-  } else {
-    mod('felicidade', -2);
-    line(c.concurso ? 'Você não passou no concurso público.' : `Você não passou na entrevista para ${tituloCarreira(c).toLowerCase()}.`);
-  }
-  CUR_CAT = null;
-}
-const ACOES_TRAB = {
-  esforco: () => { S.emprego.desemp = clamp(S.emprego.desemp + R(6, 14)); mod('felicidade', -2); mod('saude', -1); line('Você fez hora extra o ano inteiro.', '', 'trabalho'); },
-  aumento: () => {
-    if (S.emprego.desemp > 60 && chance(.55)) { S.emprego.sal = Math.round(S.emprego.sal * 1.08); line(`Você pediu aumento e conseguiu: ${fmt(S.emprego.sal)} por ano.`, 'good', 'trabalho'); }
-    else { S.emprego.desemp = clamp(S.emprego.desemp - 5); line('Você pediu aumento e o chefe riu.', 'bad', 'trabalho'); }
-  },
-  demissao: () => { line(`Você pediu demissão do emprego de ${S.emprego.titulo.toLowerCase()}.`, '', 'trabalho'); S.emprego = null; },
-  aposentar: () => {
-    S.pensao = Math.round(S.emprego.sal * (S.emprego.id === 'servidor' ? .9 : .45)); S.aposentado = true; S.emprego = null; mod('felicidade', 8);
-    S.fila.push({ id: '__marco', d: { titulo: 'Aposentadoria', texto: `Você se aposentou. Pensão: ${fmt(S.pensao)} por ano.` } });
-    line(`Você se aposentou. Pensão: ${fmt(S.pensao)} por ano.`, 'good', 'trabalho');
-  }
-};
-
-// ================= interface =================
-function ocupacao() {
-  if (!S.vivo) return G('Falecido', 'Falecida');
-  if (S.preso) return `${G('Preso', 'Presa')} · falta${S.preso > 1 ? 'm' : ''} ${S.preso} ${S.preso === 1 ? 'ano' : 'anos'}`;
-  if (S.emprego) return S.emprego.titulo;
-  if (S.faculdade) return `${G('Universitário', 'Universitária')} · ${S.faculdade.curso}`;
-  if (S.escola) return S.escola === 'fundamental' ? 'Ensino fundamental' : 'Ensino médio';
-  if (S.aposentado) return G('Aposentado', 'Aposentada');
-  if (S.idade < 2) return 'Bebê';
-  if (S.idade < 6) return 'Criança';
-  return G('Desempregado', 'Desempregada');
-}
-const cor = v => (v < 25 ? 'var(--bad)' : v < 50 ? 'var(--warn)' : 'var(--good)');
-const badge = d => (d ? `<span class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : ''}${d}</span>` : '');
-const barra = (rot, v, d) => `<div class="stat"><span>${rot}</span><div class="track"><div class="fill" style="width:${v}%;background:${cor(v)}"></div></div><span class="v mono">${v}</span>${badge(d)}</div>`;
-
-function render() {
-  const partes = [`Registro nº ${S.reg}`, S.cidade];
-  if (S.pais !== 'Brasil') partes.push(S.pais);
-  if (S.geracao > 1) partes.push(`${S.geracao}ª geração`);
-  $('reg').textContent = partes.join(' · ');
-  $('nome').textContent = S.nome;
-  $('sub').textContent = `${S.idade} ${S.idade === 1 ? 'ano' : 'anos'} · ${ocupacao()}${S.seguidores >= 1000 ? ` · ${num(S.seguidores)} seguidores` : ''}`;
-  $('money').textContent = fmt(S.dinheiro);
-  $('money').classList.toggle('neg', S.dinheiro < 0);
-  const dm = deltas.dinheiro || 0;
-  $('moneyDelta').innerHTML = dm ? `<span class="delta ${dm > 0 ? 'up' : 'down'}">${dm > 0 ? '+' : '−'}${fmt(Math.abs(dm))}</span>` : '';
-  $('stats').innerHTML = STATS.map(([k, n]) => barra(n, S.st[k], deltas[k])).join('');
-  deltas = {};
-
-  let html = '';
-  if (!S.vivo) {
-    const f = S.fita || fita();
-    const herdeiros = filhosVivos();
-    html += `<section class="obit">
-      <span class="fita">${esc(f[0])}</span>
-      <h2>${esc(S.nome)}</h2>
-      <p class="note">${esc(f[1])}</p>
-      <dl><dt>Viveu</dt><dd class="mono">${S.nasc} – ${S.ano} · ${S.idade} anos</dd>
-      <dt>Profissão</dt><dd>${esc(S.ultimoTrabalho || 'Nenhuma')}</dd>
-      <dt>Formação</dt><dd>${S.cursos.length ? S.cursos.join(', ') : FORM_NOME[S.formacao]}</dd>
-      <dt>Filhos</dt><dd class="mono">${S.rel.filter(r => r.tipo === 'filho').length}</dd>
-      <dt>Patrimônio</dt><dd class="mono">${fmt(patrimonio())}</dd></dl>
-      <div class="legado">
-        ${herdeiros.map(h => `<button class="primary" data-act="legado" data-id="${h.id}">Continuar como ${esc(h.nome.split(' ')[0])} (${h.idade} anos)</button>`).join('')}
-        <button class="${herdeiros.length ? 'ghost' : 'primary'}" data-act="novaVidaRapida">Viver uma vida nova</button>
-      </div></section>`;
-  }
-  html += S.log.slice().reverse().map((y, idx) => `<article class="yr${idx === 0 ? ' now' : ''}"><header><h3>${y.i === 0 ? 'Nascimento' : y.i + (y.i === 1 ? ' ano' : ' anos')}</h3><span class="ano mono">${y.a}</span></header>
-    <ul>${y.l.map(x => `<li class="cat-${x.c || 'vida'} ${x.tone}">${esc(x.t)}</li>`).join('')}</ul></article>`).join('');
-  $('log').innerHTML = html;
-
-  $('tabCarreira').textContent = S.idade < 18 ? 'Escola' : 'Carreira';
-  $('age').disabled = !S.vivo || S.fila.length > 0;
-  checarConquistas();
-  renderModal();
-  if (!$('sheet').hidden) abrir(sheetAtual);
-}
-
-function renderModal() {
-  const item = S.fila[0];
-  const m = $('modal');
-  if (!item || !S.vivo) { m.hidden = true; return; }
-  fecharSheet();
-  if (item.id === '__marco') {
-    const novo = m.hidden || !m.classList.contains('marco');
-    m.classList.add('marco');
-    $('modalTag').textContent = `Marco da vida · ${S.idade} ${S.idade === 1 ? 'ano' : 'anos'}`;
-    $('modalTitle').hidden = false; $('modalTitle').textContent = item.d.titulo;
-    $('modalText').textContent = item.d.texto;
-    $('modalChoices').innerHTML = '<button data-escolha="0">Seguir em frente</button>';
-    if (novo) { som('marco'); confete(); }
-  } else {
-    m.classList.remove('marco');
-    const e = EV[item.id];
-    // descarta perguntas que deixaram de fazer sentido (ex.: perdeu o emprego no mesmo ano)
-    let valido = !!e;
-    if (e && e.cond) { try { valido = !!e.cond(S); } catch (err) { valido = false; } }
-    if (!valido) { S.fila.shift(); renderModal(); return; }
-    const lista = typeof e.escolhas === 'function' ? e.escolhas(S, item.d) : e.escolhas;
-    $('modalTag').textContent = `${S.idade} ${S.idade === 1 ? 'ano' : 'anos'} · ${CATS[e.cat] || 'Vida'}`;
-    $('modalTitle').hidden = true;
-    $('modalText').textContent = e.texto(S, item.d);
-    $('modalChoices').innerHTML = lista.map((c, i) => `<button data-escolha="${i}">${esc(rotuloTexto(c.t))}</button>`).join('');
-  }
-  m.hidden = false;
-  const b = $('modalChoices').querySelector('button');
-  if (b) b.focus();
-}
-function escolher(i) {
-  deltas = {};
-  const item = S.fila.shift();
-  if (item.id !== '__marco') {
-    const e = EV[item.id];
-    const lista = typeof e.escolhas === 'function' ? e.escolhas(S, item.d) : e.escolhas;
-    CUR_CAT = e.cat || 'vida';
-    try { lista[i].fx(S, item.d); } catch (err) { console.warn('Escolha com erro:', item.id, err); }
-    CUR_CAT = null;
-  }
-  morteImediata();
-  salvar(); render();
-  if (!S.fila.length) window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-function morteImediata() { if (S.vivo && S.st.saude <= 0) morte(); }
-
-let sheetAtual = null;
-const TITULOS = { atividades: 'Atividades', pessoas: 'Pessoas', bens: 'Bens', menu: 'Menu' };
-function abrir(nome) {
-  sheetAtual = nome;
-  $('sheetTitle').textContent = nome === 'carreira' ? (S.idade < 18 ? 'Escola' : 'Carreira') : TITULOS[nome];
-  const y = $('sheet').scrollTop;
-  $('sheetBody').innerHTML = ({ atividades: htmlAtividades, carreira: htmlCarreira, pessoas: htmlPessoas, bens: htmlBens, menu: htmlMenu })[nome]();
-  $('sheet').hidden = false; $('scrim').hidden = false;
-  $('sheet').scrollTop = y;
-}
-function fecharSheet() { $('sheet').hidden = true; $('scrim').hidden = true; }
-const morto = () => (S.vivo ? '' : '<p class="note">Esta vida acabou. Continue com um herdeiro ou comece uma nova.</p>');
-const linha = (attrs, titulo, sub, tag, off) => `<button class="row" ${attrs} ${off ? 'disabled' : ''}><span><b>${titulo}</b>${sub ? `<small>${sub}</small>` : ''}</span><span class="tag mono">${tag}</span></button>`;
-
-function htmlAtividades() {
-  if (!S.vivo) return morto();
-  let h = S.preso ? '<p class="note intro">Na prisão, só dá para estudar, ler, meditar e malhar.</p>' : '<p class="note intro">Cada atividade pode ser feita uma vez por ano. Antes dos 18, seus pais pagam.</p>';
-  const grupos = {};
-  ATIVIDADES.forEach(a => {
-    if (S.preso && !a.prisao) return;
-    if (a.mostra && !a.mostra()) return;
-    (grupos[a.g] = grupos[a.g] || []).push(a);
-  });
-  Object.entries(grupos).forEach(([g, lista]) => {
-    h += `<div class="group"><h4>${g}</h4>`;
-    if (g === 'Saúde' && S.idade >= 18 && !S.preso)
-      h += linha('data-act="plano"', S.plano ? 'Cancelar plano de saúde' : 'Contratar plano de saúde', S.plano ? 'Médico grátis e tratamentos mais baratos' : 'Médico grátis, tratamentos 80% mais baratos', `${fmt(preco(6000))}/ano`);
-    if (g === 'Saúde') S.doencas.forEach(n => {
-      const c = S.idade < 18 ? 0 : Math.round(preco(DOENCAS[n].custo) * (S.plano ? .2 : 1));
-      const feito = S.feitosAno['trat:' + n];
-      h += linha(`data-act="tratar" data-id="${esc(n)}"`, `Tratar ${n.toLowerCase()}`, `Chance de cura: ${Math.round((DOENCAS[n].cura + (S.plano ? .15 : 0)) * 100)}%`, feito ? 'Feito este ano' : (c ? fmt(c) : 'Grátis'), feito || c > S.dinheiro);
-    });
-    lista.forEach(a => {
-      const c = custoAtividade(a);
-      let motivo = '';
-      if (S.idade < a.min) motivo = `A partir de ${a.min} anos`;
-      else if (S.feitosAno['at:' + a.id]) motivo = 'Feito este ano';
-      else if (c && S.dinheiro < c) motivo = 'Sem saldo';
-      h += linha(`data-act="atividade" data-id="${a.id}"`, a.nome, a.desc, motivo || (c ? fmt(c) : 'Grátis'), !!motivo);
-    });
-    h += '</div>';
-  });
-  return h;
-}
-
-function htmlCarreira() {
-  if (!S.vivo) return morto();
-  if (S.preso) return `<p class="note">Você está na prisão. Falta${S.preso > 1 ? 'm' : ''} ${S.preso} ${S.preso === 1 ? 'ano' : 'anos'} de pena. Estudar e ler continuam liberados em Atividades.</p>`;
-  let h = '<div class="group"><h4>Formação</h4>';
-  if (S.idade < 6) h += `<p class="note">Você ainda é ${G('pequeno', 'pequena')} demais para a escola. As aulas começam aos 6 anos.</p>`;
-  else {
-    const partes = [];
-    if (S.escola) partes.push(`Cursando o ${S.escola === 'fundamental' ? 'ensino fundamental' : 'ensino médio'}.`);
-    else partes.push(`${FORM_NOME[S.formacao]}${S.cursos.length ? ' em ' + S.cursos.join(' e ') : ''}.`);
-    if (S.faculdade) partes.push(`Faculdade de ${S.faculdade.curso} (${S.faculdade.tipo === 'bolsa' ? 'bolsa ProUni' : S.faculdade.fies ? 'Fies' : S.faculdade.tipo}), ano ${S.faculdade.ano + 1} de ${CURSOS[S.faculdade.curso].anos}.`);
-    if (S.fies > 0) partes.push(`Dívida do Fies: ${fmt(S.fies)}.`);
-    h += `<p class="note">${partes.join(' ')}</p>`;
-    if (S.idade >= 18 && !S.escola && !S.faculdade && FORM[S.formacao] >= FORM.medio && !S.aposentado)
-      h += linha('data-act="faculdade"', 'Entrar na faculdade', 'Federal, ProUni, Fies ou particular', '›');
-    if (S.faculdade) h += linha('data-act="trancar"', 'Largar a faculdade', 'Você perde o progresso do curso', '›');
-  }
-  h += '</div>';
-  if (S.emprego) {
-    const e = S.emprego;
-    h += `<div class="group"><h4>Emprego</h4>
-      <div class="card"><div class="card-top"><b>${esc(e.titulo)}</b><small class="mono">${fmt(e.sal)}/ano</small></div>
-      ${barra('Desempenho', e.desemp)}
-      <small class="note">${e.anos} ${e.anos === 1 ? 'ano' : 'anos'} no cargo</small>
-      <div class="chips">
-        <button class="chip" data-act="trab" data-id="esforco" ${S.feitosAno['trab:esforco'] ? 'disabled' : ''}>Trabalhar mais</button>
-        <button class="chip" data-act="trab" data-id="aumento" ${S.feitosAno['trab:aumento'] ? 'disabled' : ''}>Pedir aumento</button>
-        <button class="chip" data-act="trab" data-id="demissao">Pedir demissão</button>
-        ${S.idade >= 60 ? '<button class="chip" data-act="trab" data-id="aposentar">Aposentar</button>' : ''}
-      </div></div></div>`;
-  } else if (S.aposentado) {
-    h += `<div class="group"><h4>Aposentadoria</h4><p class="note">${G('Aposentado', 'Aposentada')}, com pensão de ${fmt(S.pensao)} por ano.</p></div>`;
-  }
-  if (S.seguidores > 0) h += `<div class="group"><h4>Redes sociais</h4><p class="note">${num(S.seguidores)} seguidores.${S.seguidores >= 10000 ? ` Rendem cerca de ${fmt(S.seguidores * .6)} por ano em publicidade.` : ' A partir de 10 mil, começam a render dinheiro.'}</p></div>`;
-  if (!S.emprego && !S.aposentado && S.idade >= 16) {
-    h += '<div class="group"><h4>Vagas</h4>' + CARREIRAS.map(c => {
-      const motivo = podeCandidatar(c) || (S.feitosAno['vaga:' + c.id] ? 'Tente no ano que vem' : '');
-      const sal = c.id === 'fut' ? 'variável' : `${fmt(c.sal * PAISES[S.pais].sal)}/ano`;
-      return linha(`data-act="vaga" data-id="${c.id}"`, tituloCarreira(c), motivo || (c.concurso ? 'Prestar concurso' : 'Candidatar-se'), sal, !!motivo);
-    }).join('') + '</div>';
-  } else if (!S.emprego && !S.aposentado && S.idade >= 6) {
-    h += '<div class="group"><h4>Vagas</h4><p class="note">Dá para trabalhar a partir dos 16 anos.</p></div>';
-  }
-  return h;
-}
-
-function htmlPessoas() {
-  const vivos = S.rel.filter(r => r.vivo), mortos = S.rel.filter(r => !r.vivo);
-  const card = r => {
-    const acoes = S.vivo && r.vivo ? ACOES_REL.filter(a => a.so(r) && (!S.preso || a.id === 'conversar')).map(a =>
-      `<button class="chip" data-act="rel" data-id="${r.id}" data-acao="${a.id}" ${S.feitosAno[r.id + ':' + a.id] ? 'disabled' : ''}>${a.id === 'terminar' && r.casado ? 'Pedir divórcio' : a.nome}</button>`).join('') : '';
-    return `<div class="card${r.vivo ? '' : ' dead'}">
-      <div class="card-top"><span><b>${esc(r.nome)}</b> <small>${rotulo(r)}</small></span><small class="mono">${r.vivo ? r.idade + ' anos' : (r.sumiu ? 'sumiu' : 'faleceu')}</small></div>
-      ${r.vivo ? barra('Relação', r.rel) : ''}
-      ${acoes ? `<div class="chips">${acoes}</div>` : ''}</div>`;
-  };
-  let h = `<div class="group">${vivos.length ? vivos.map(card).join('') : '<p class="note">Ninguém por perto agora.</p>'}</div>`;
-  if (S.vivo && !S.preso && !achar('parceiro') && S.idade >= 14)
-    h += `<div class="group">${linha('data-act="procurar"', 'Procurar alguém', 'A chance depende da sua aparência', S.feitosAno.procurar ? 'Feito este ano' : '›', S.feitosAno.procurar)}</div>`;
-  if (mortos.length) h += '<div class="group"><h4>Em memória</h4>' + mortos.map(card).join('') + '</div>';
-  return h;
-}
-
-function htmlBens() {
-  if (!S.vivo) return morto();
-  let h = `<div class="group"><h4>Resumo</h4><div class="kv">
-    <span>Saldo</span><b class="mono${S.dinheiro < 0 ? ' neg' : ''}">${fmt(S.dinheiro)}</b>
-    <span>Investido</span><b class="mono">${fmt(totalInv())}</b>
-    <span>Bens</span><b class="mono">${fmt(valorBens())}</b>
-    ${dividaBens() ? `<span>Financiamentos</span><b class="mono neg">${fmt(-dividaBens())}</b>` : ''}
-    ${S.fies ? `<span>Fies</span><b class="mono neg">${fmt(-S.fies)}</b>` : ''}
-    <span>Patrimônio</span><b class="mono">${fmt(patrimonio())}</b>
-    ${S.idade >= 18 && !S.preso ? `<span>Gastos fixos</span><b class="mono">${fmt(custoAnual())}/ano</b>` : ''}</div></div>`;
-  if (S.idade < 18) return h + '<p class="note">Comprar, investir e alugar liberam aos 18 anos.</p>';
-  if (S.preso) return h + '<p class="note">Na prisão não dá para mexer no patrimônio.</p>';
-  const MOR = { pais: 'Na casa dos pais', aluguel: 'Apartamento alugado', propria: 'Imóvel próprio' };
-  h += `<div class="group"><h4>Onde você mora</h4><p class="note">${MOR[S.moradia]} · ${fmt(custoMoradia())} por ano</p>`;
-  if (S.moradia !== 'aluguel') h += linha('data-act="mudar" data-id="aluguel"', 'Alugar um apartamento', 'Mais liberdade e felicidade', `${fmt(preco(18000))}/ano`);
-  if (S.moradia !== 'pais' && paisVivos().length) h += linha('data-act="mudar" data-id="pais"', 'Voltar para a casa dos pais', 'Economia, mas pesa depois dos 25', `${fmt(preco(3000))}/ano`);
-  if (S.moradia !== 'propria' && S.bens.some(b => b.tipo === 'imovel')) h += linha('data-act="mudar" data-id="propria"', 'Morar no seu imóvel', 'Só condomínio e IPTU', `${fmt(preco(6000))}/ano`);
-  h += '</div>';
-  if (S.bens.length) {
-    h += '<div class="group"><h4>Seus bens</h4>' + S.bens.map(b => `<div class="card"><div class="card-top"><b>${esc(b.nome)}</b><small class="mono">${fmt(b.valor)}</small></div>
-      ${b.anos ? `<small class="note">Parcela de ${fmt(b.parcela)} por ano · faltam ${b.anos} ${b.anos === 1 ? 'ano' : 'anos'}</small>` : '<small class="note">Quitado</small>'}
-      <div class="chips"><button class="chip" data-act="vender" data-id="${b.id}">Vender por ${fmt(b.valor - b.parcela * b.anos)}</button></div></div>`).join('') + '</div>';
-  }
-  const INV = [['poupanca', 'Poupança', 'Rende 6% ao ano, sem risco'], ['acoes', 'Ações', 'Entre −25% e +35% ao ano'], ['cripto', 'Criptomoedas', 'Entre −75% e +100% ao ano']];
-  h += '<div class="group"><h4>Investimentos</h4>' + INV.map(([k, n, d]) => `<div class="card"><div class="card-top"><span><b>${n}</b> <small>${d}</small></span><small class="mono">${fmt(S.inv[k])}</small></div>
-    <div class="chips">
-      <button class="chip" data-act="investir" data-id="${k}" data-v="1000" ${S.dinheiro < 1000 ? 'disabled' : ''}>+ ${fmt(1000)}</button>
-      <button class="chip" data-act="investir" data-id="${k}" data-v="10000" ${S.dinheiro < 10000 ? 'disabled' : ''}>+ ${fmt(10000)}</button>
-      <button class="chip" data-act="investir" data-id="${k}" data-v="tudo" ${S.dinheiro < 1 ? 'disabled' : ''}>Aplicar todo o saldo</button>
-      <button class="chip" data-act="resgatar" data-id="${k}" ${S.inv[k] < 1 ? 'disabled' : ''}>Resgatar</button>
-    </div></div>`).join('') + '</div>';
-  const loja = (lista, tipo, titulo, anos) => `<div class="group"><h4>${titulo}</h4>` + lista.map(i => {
-    const v = preco(i.valor), entrada = Math.round(v * .2);
-    return `<div class="card"><div class="card-top"><b>${i.nome}</b><small class="mono">${fmt(v)}</small></div>
-      <div class="chips">
-        <button class="chip" data-act="comprar" data-tipo="${tipo}" data-id="${i.id}" data-modo="vista" ${S.dinheiro < v ? 'disabled' : ''}>Comprar à vista</button>
-        <button class="chip" data-act="comprar" data-tipo="${tipo}" data-id="${i.id}" data-modo="fin" ${S.dinheiro < entrada || !S.emprego ? 'disabled' : ''}>Financiar em ${anos} anos (entrada ${fmt(entrada)})</button>
-      </div></div>`;
-  }).join('') + (S.emprego ? '' : '<p class="note">Financiar exige emprego.</p>') + '</div>';
-  h += loja(IMOVEIS, 'imovel', 'Imóveis à venda', 30) + loja(CARROS, 'carro', 'Carros à venda', 5);
-  return h;
-}
-
-function htmlMenu() {
-  const vidas = lerLS(VIDAS_KEY, []);
-  return `<div class="group"><h4>Conquistas · ${CONQ.length} de ${CONQUISTAS.length}</h4><div class="conq">
-    ${CONQUISTAS.map(c => `<div class="${CONQ.includes(c.id) ? '' : 'off'}"><b>${c.nome}</b><small>${c.desc}</small></div>`).join('')}</div></div>
-    ${vidas.length ? `<div class="group"><h4>Vidas anteriores</h4>${vidas.slice(0, 8).map(v => `<div class="card"><div class="card-top"><span><b>${esc(v.nome)}</b> <small>${esc(v.fita)}</small></span><small class="mono">${v.idade} anos</small></div></div>`).join('')}</div>` : ''}
-    <div class="group"><h4>Nova vida</h4>
-    <div class="field"><label for="nvNome">Primeiro nome</label><input id="nvNome" maxlength="24" placeholder="Deixe vazio para sortear"></div>
-    <div class="field"><label for="nvSexo">Sexo</label><select id="nvSexo"><option value="">Sortear</option><option value="F">Feminino</option><option value="M">Masculino</option></select></div>
-    <div class="field"><label for="nvInt">Interesse amoroso</label><select id="nvInt"><option value="A">Homens e mulheres</option><option value="M">Homens</option><option value="F">Mulheres</option></select></div>
-    <button class="primary" data-act="novaVida">${S.vivo ? 'Começar do zero (apaga a vida atual)' : 'Nascer de novo'}</button></div>
-    <div class="group"><h4>Ajustes</h4>
-    ${linha('data-act="som"', 'Sons', 'Efeitos curtos ao passar o ano e nos marcos', somLigado ? 'Ligado' : 'Desligado')}</div>
-    <div class="group"><h4>Como jogar</h4>
-    <p class="note">Toque em +1 ano para envelhecer. Algumas situações pedem uma escolha, e as escolhas destravam outras situações no futuro. Cuide dos atributos em Atividades, estude e trabalhe em Carreira, cuide da família em Pessoas e do dinheiro em Bens. Quando a vida acabar, dá para continuar como um dos filhos. O progresso fica salvo neste navegador.</p>
-    <ul class="legend">${Object.entries(CATS).map(([k, n]) => `<li class="cat-${k}">${n}</li>`).join('')}</ul></div>`;
-}
-
-// ================= cliques =================
-document.addEventListener('click', ev => {
-  const b = ev.target.closest('button');
-  if (!b || b.disabled) return;
-  if (b.dataset.open) { abrir(b.dataset.open); return; }
-  if (b.dataset.escolha !== undefined) { escolher(+b.dataset.escolha); return; }
-  const act = b.dataset.act, id = b.dataset.id;
-  if (!act || !S) return;
-  if ((act === 'trab' && !S.emprego) || (act === 'trancar' && !S.faculdade) || (act === 'rel' && !S.rel.some(x => x.id === id)) || (act === 'vender' && !S.bens.some(x => x.id === id))) { render(); return; }
-  deltas = {};
-  if (act === 'atividade') {
-    const a = ATIVIDADES.find(x => x.id === id);
-    const c = custoAtividade(a); if (c) grana(-c);
-    S.feitosAno['at:' + a.id] = true;
-    a.fx();
-  } else if (act === 'tratar') {
-    S.feitosAno['trat:' + id] = true;
-    const d = DOENCAS[id];
-    if (S.idade >= 18) grana(-Math.round(preco(d.custo) * (S.plano ? .2 : 1)));
-    if (chance(d.cura + (S.plano ? .15 : 0))) { S.doencas = S.doencas.filter(n => n !== id); mod('saude', 8); line(`O tratamento funcionou: você está ${G('curado', 'curada')} de ${id.toLowerCase()}.`, 'good', 'saude'); }
-    else line(`O tratamento de ${id.toLowerCase()} não funcionou este ano.`, 'bad', 'saude');
-  } else if (act === 'plano') {
-    S.plano = !S.plano; line(S.plano ? 'Você contratou um plano de saúde.' : 'Você cancelou o plano de saúde.', '', 'saude');
-  } else if (act === 'vaga') candidatar(id);
-  else if (act === 'trab') {
-    S.feitosAno['trab:' + id] = true;
-    ACOES_TRAB[id]();
-  } else if (act === 'faculdade') { S.fila.push({ id: 'curso', d: {} }); }
-  else if (act === 'trancar') { line(`Você largou a faculdade de ${S.faculdade.curso}.`, '', 'escola'); S.faculdade = null; }
-  else if (act === 'rel') {
-    const r = S.rel.find(x => x.id === id);
-    S.feitosAno[r.id + ':' + b.dataset.acao] = true;
-    CUR_CAT = ['parceiro', 'ex'].includes(r.tipo) ? 'amor' : 'familia';
-    ACOES_REL.find(a => a.id === b.dataset.acao).fx(r);
-    CUR_CAT = null;
-  } else if (act === 'procurar') {
-    S.feitosAno.procurar = true;
-    CUR_CAT = 'amor';
-    if (chance(.25 + S.st.aparencia / 200)) conhecerAlguem(pick(['no trabalho', 'pela internet', 'num show', 'na fila do pão']));
-    else { mod('felicidade', -2); line('Você tentou, mas ninguém se interessou este ano.'); }
-    CUR_CAT = null;
-  } else if (act === 'mudar') {
-    S.moradia = id;
-    if (id === 'aluguel') mod('felicidade', 4);
-    line({ aluguel: 'Você alugou um apartamento.', pais: 'Você voltou para a casa dos pais.', propria: 'Você se mudou para o seu imóvel.' }[id], '', 'vida');
-  } else if (act === 'comprar') {
-    const item = (b.dataset.tipo === 'imovel' ? IMOVEIS : CARROS).find(x => x.id === id);
-    const v = preco(item.valor), anos = b.dataset.tipo === 'imovel' ? 30 : 5;
-    const bem = { id: uid(), tipo: b.dataset.tipo, nome: item.nome, valor: v, parcela: 0, anos: 0 };
-    if (b.dataset.modo === 'vista') grana(-v);
-    else { const ent = Math.round(v * .2); grana(-ent); bem.parcela = Math.round((v - ent) * (anos === 30 ? 1.8 : 1.3) / anos); bem.anos = anos; }
-    S.bens.push(bem);
-    CUR_CAT = 'dinheiro';
-    if (bem.tipo === 'imovel') {
-      S.moradia = 'propria';
-      if (!flag('imovel')) { setFlag('imovel'); marco('Casa própria', `Você comprou: ${item.nome.toLowerCase()}. As chaves são suas.`); }
-      else line(`Você comprou: ${item.nome.toLowerCase()}.`, 'good');
-    } else { mod('felicidade', 5); line(`Você comprou: ${item.nome.toLowerCase()}.`, 'good'); }
-    CUR_CAT = null;
-  } else if (act === 'vender') {
-    const bem = S.bens.find(x => x.id === id);
-    grana(bem.valor - bem.parcela * bem.anos);
-    S.bens = S.bens.filter(x => x.id !== id);
-    if (bem.tipo === 'imovel' && !S.bens.some(x => x.tipo === 'imovel') && S.moradia === 'propria') S.moradia = 'aluguel';
-    line(`Você vendeu: ${bem.nome.toLowerCase()}.`, '', 'dinheiro');
-  } else if (act === 'investir') {
-    const v = b.dataset.v === 'tudo' ? S.dinheiro : +b.dataset.v;
-    grana(-v); S.inv[id] += v;
-  } else if (act === 'resgatar') {
-    grana(S.inv[id]); S.inv[id] = 0;
-  } else if (act === 'som') {
-    somLigado = !somLigado; gravarLS(SOM_KEY, somLigado); if (somLigado) som('bom');
-  } else if (act === 'novaVida') {
-    novaVida({ nome: $('nvNome').value, sexo: $('nvSexo').value, interesse: $('nvInt').value });
-    fecharSheet(); window.scrollTo({ top: 0 }); return;
-  } else if (act === 'novaVidaRapida') { novaVida({ interesse: S.interesse }); window.scrollTo({ top: 0 }); return; }
-  else if (act === 'legado') { novaVidaLegado(id); window.scrollTo({ top: 0 }); return; }
-  morteImediata();
-  salvar(); render();
-});
-$('age').addEventListener('click', avancar);
-$('sheetClose').addEventListener('click', fecharSheet);
-$('scrim').addEventListener('click', fecharSheet);
-document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('sheet').hidden) fecharSheet(); });
-
-// ================= som, confete e aviso =================
-let somLigado = lerLS(SOM_KEY, true);
-let AC = null;
-function som(tipo) {
-  if (!somLigado) return;
-  try {
-    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
-    const notas = { ano: [[520, .06]], bom: [[660, .08], [880, .1]], ruim: [[300, .12], [220, .16]], marco: [[523, .1], [659, .1], [784, .1], [1046, .22]], conquista: [[784, .08], [1046, .16]] }[tipo];
-    let t = AC.currentTime;
-    notas.forEach(([f, d]) => {
-      const o = AC.createOscillator(), g = AC.createGain();
-      o.type = 'triangle'; o.frequency.value = f;
-      g.gain.setValueAtTime(.1, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
-      o.connect(g).connect(AC.destination); o.start(t); o.stop(t + d);
-      t += d * .9;
-    });
-  } catch (e) {}
-}
-function confete() {
-  if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const cv = $('confete'), ctx = cv.getContext && cv.getContext('2d');
-  if (!ctx) return;
-  cv.hidden = false; cv.width = innerWidth; cv.height = innerHeight;
-  const cs = getComputedStyle(document.documentElement);
-  const cores = ['--sun', '--accent', '--c-amor', '--c-saude', '--c-fama'].map(v => cs.getPropertyValue(v).trim() || '#F4B62C');
-  const ps = Array.from({ length: 120 }, () => ({ x: Math.random() * cv.width, y: -20 - Math.random() * cv.height * .4, vx: (Math.random() - .5) * 3, vy: 2 + Math.random() * 4, r: Math.random() * 6, c: pick(cores), a: Math.random() * 6 }));
-  const ini = performance.now();
-  (function quadro(t) {
-    ctx.clearRect(0, 0, cv.width, cv.height);
-    ps.forEach(p => { p.x += p.vx; p.y += p.vy; p.a += .1; ctx.fillStyle = p.c; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillRect(-4, -2, 8, 4 + p.r); ctx.restore(); });
-    if (t - ini < 2200) requestAnimationFrame(quadro); else { ctx.clearRect(0, 0, cv.width, cv.height); cv.hidden = true; }
-  })(ini);
-}
-let toastT = null;
-function toast(msg) {
-  const t = $('toast'); t.textContent = msg; t.hidden = false;
-  clearTimeout(toastT); toastT = setTimeout(() => { t.hidden = true; }, 3200);
-}
-
-// ================= salvar =================
-function salvar() { gravarLS(SAVE_KEY, S); }
-if (window.claude && window.claude.hot && window.claude.hot.snapshot) window.claude.hot.snapshot(() => ({ S }));
-function start(data) {
-  const salvo = (data && data.S) || lerLS(SAVE_KEY, null);
-  if (salvo && salvo.versao === 2) { S = salvo; render(); } else novaVida();
-}
-const hot = window.claude && window.claude.hot;
-hot && hot.ready ? hot.ready(start) : start((hot && hot.data) || {});
-</script>
-
+<script src="js/dados.js"></script>
+<script src="js/eventos.js"></script>
+<script src="js/motor.js"></script>
+<script src="js/ui.js"></script>
 </body>
 </html>

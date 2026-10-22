@@ -8,14 +8,18 @@ Abra o `index.html` no navegador. Não precisa instalar nada. O progresso fica s
 
 ## Arquivos
 
-- `index.html`: o jogo (interface, regras, carreiras, bens, conquistas).
-- `eventos.js`: os eventos aleatórios. As instruções para criar eventos novos estão no topo do arquivo.
-- `teste/sim.js`: simula centenas de vidas aleatórias para achar erros de lógica.
+- `index.html`: a página e o visual do jogo.
+- `js/dados.js`: listas fixas: nomes, estados e times, profissões, cursos, carreiras, lojas, cargos políticos.
+- `js/eventos.js`: os eventos aleatórios. As instruções para criar eventos novos estão no topo do arquivo.
+- `js/motor.js`: as regras: passagem do ano, escola e ENEM, trabalho, dinheiro, saúde, morte e conquistas.
+- `js/ui.js`: os painéis (Ocupação, Bens, Relações, Atividades, Menu), as interações e o minijogo de fuga.
+- `teste/sim.js`: simula centenas de vidas apertando botões aleatórios para achar erros de lógica.
 
 ## Testar
 
 ```bash
-node teste/sim.js . 300
+node teste/sim.js . 200            # jogando
+PASSIVO=1 node teste/sim.js . 200  # sem fazer nada, para medir a expectativa de vida
 ```
 
 O resultado mostra quantas vidas rodaram, quantos erros aconteceram e a distribuição das fitas de fim de vida.
