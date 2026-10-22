@@ -1,6 +1,6 @@
 # Ano a Ano
 
-Simulador de vida em português, no estilo dos jogos "life sim": você nasce, envelhece um ano por vez e toma decisões que mudam sua história. Tem escola, faculdade, ENEM, carreiras, namoro, filhos, dinheiro, fama, saúde, crime e legado entre gerações, com situações do dia a dia brasileiro.
+Simulador de vida em português, no estilo dos jogos "life sim": você nasce, envelhece um ano por vez e toma decisões que mudam sua história. Tem escola, vestibular, faculdade, carreiras, namoro, filhos, dinheiro, fama, saúde, crime e legado entre gerações, com situações do dia a dia brasileiro.
 
 ## Como jogar
 
