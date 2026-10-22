@@ -65,7 +65,24 @@ const RACAS = [
   { id: 'calopsita', nome: 'Calopsita', especie: 'ave', preco: 400 },
   { id: 'coelho', nome: 'Coelho', especie: 'coelho', preco: 300 }
 ];
-const ESCOLAS = ['E.E. Professora Maria José', 'E.M. Monteiro Lobato', 'Colégio Estadual Tiradentes', 'E.E. Dom Pedro II', 'Escola Municipal Cecília Meireles', 'Colégio Santa Clara', 'E.E. Paulo Freire', 'Escola Municipal Anita Garibaldi'];
+const ESCOLAS_PUB = ['E.E. Professora Maria José', 'E.M. Monteiro Lobato', 'Colégio Estadual Tiradentes', 'E.E. Dom Pedro II', 'Escola Municipal Cecília Meireles', 'E.E. Paulo Freire', 'Escola Municipal Anita Garibaldi', 'E.M. Carolina Maria de Jesus'];
+const ESCOLAS_PART = ['Colégio Santa Clara', 'Colégio Integrado Horizonte', 'Instituto Educacional Saber', 'Colégio Bom Jesus do Vale', 'Escola Monte Azul'];
+// Artes marciais: o nível (0 a 100) vira faixa
+const ARTES = [
+  { id: 'jiujitsu', nome: 'Jiu-jítsu', ico: '🥋', faixas: ['branca', 'azul', 'roxa', 'marrom', 'preta'] },
+  { id: 'capoeira', nome: 'Capoeira', ico: '🤸', faixas: ['crua', 'amarela', 'azul', 'verde', 'vermelha'], corda: true },
+  { id: 'judo', nome: 'Judô', ico: '🥋', faixas: ['branca', 'amarela', 'laranja', 'verde', 'preta'] },
+  { id: 'karate', nome: 'Caratê', ico: '🥋', faixas: ['branca', 'amarela', 'verde', 'marrom', 'preta'] },
+  { id: 'muaythai', nome: 'Muay thai', ico: '🥊', faixas: ['branca', 'amarela', 'verde', 'azul', 'preta'], prajied: true },
+  { id: 'taekwondo', nome: 'Taekwondo', ico: '🥋', faixas: ['branca', 'amarela', 'verde', 'vermelha', 'preta'] }
+];
+const INSTRUMENTOS = [
+  { id: 'violao', nome: 'Violão', ico: '🎸' }, { id: 'cavaquinho', nome: 'Cavaquinho', ico: '🎸' }, { id: 'pandeiro', nome: 'Pandeiro', ico: '🥁' },
+  { id: 'sanfona', nome: 'Sanfona', ico: '🪗' }, { id: 'berimbau', nome: 'Berimbau', ico: '🎶' }, { id: 'zabumba', nome: 'Zabumba', ico: '🥁' },
+  { id: 'bateria', nome: 'Bateria', ico: '🥁' }, { id: 'teclado', nome: 'Teclado', ico: '🎹' }, { id: 'flauta', nome: 'Flauta doce', ico: '🎶' },
+  { id: 'sax', nome: 'Saxofone', ico: '🎷' }, { id: 'trompete', nome: 'Trompete', ico: '🎺' }, { id: 'guitarra', nome: 'Guitarra', ico: '🎸' },
+  { id: 'baixo', nome: 'Baixo', ico: '🎸' }, { id: 'violino', nome: 'Violino', ico: '🎻' }
+];
 const CLUBES = [
   { id: 'futebol', nome: 'Time de futsal', st: 'saude' }, { id: 'teatro', nome: 'Grupo de teatro', st: 'felicidade' },
   { id: 'banda', nome: 'Fanfarra da escola', st: 'felicidade' }, { id: 'robotica', nome: 'Clube de robótica', st: 'inteligencia' },
@@ -87,6 +104,7 @@ const PAISES = {
   'Japão': { moeda: 'JPY', taxa: 0.037, sal: 2.3, custo: 2.0 }
 };
 const DOENCAS = {
+  'Gripe': { grav: 2, custo: 200, cura: .95, rec: .9 },
   'Pressão alta': { grav: 1, custo: 2000, cura: .7, rec: 0 },
   'Diabetes': { grav: 2, custo: 4000, cura: .5, rec: 0 },
   'Depressão': { grav: 1, custo: 3000, cura: .6, fel: 4, rec: .15 },

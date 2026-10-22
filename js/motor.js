@@ -10,7 +10,8 @@ const lerLS = (k, def) => { try { const t = localStorage.getItem(k); return t ? 
 const gravarLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
 const SAVE_KEY = 'ano-a-ano:v3', CONQ_KEY = 'ano-a-ano:conquistas', VIDAS_KEY = 'ano-a-ano:vidas', SOM_KEY = 'ano-a-ano:som';
 const ANO_INICIAL = 2026;
-const CATS = { vida: 'Vida', familia: 'Família', escola: 'Escola', amor: 'Amor', saude: 'Saúde', dinheiro: 'Dinheiro', trabalho: 'Trabalho', fama: 'Fama', crime: 'Crime' };
+const CAT_ICO = { vida: '🌱', infancia: '🧸', familia: '👪', escola: '🏫', amor: '💘', saude: '🤒', dinheiro: '💰', trabalho: '💼', fama: '⭐', crime: '🚨' };
+const CATS = { vida: 'Vida', infancia: 'Infância', familia: 'Família', escola: 'Escola', amor: 'Amor', saude: 'Saúde', dinheiro: 'Dinheiro', trabalho: 'Trabalho', fama: 'Fama', crime: 'Crime' };
 
 // ================= estado e ajudantes =================
 let S = null;
@@ -44,7 +45,7 @@ const temCarro = () => S.bens.some(b => b.tipo === 'veiculo' && b.cnh === 'carro
 
 function pessoa(tipo, sexo, idade, sob) {
   const nome = `${sexo === 'F' ? pick(NF) : pick(NM)} ${sob || pick(SOB)}`;
-  const p = { id: uid(), tipo, sexo, nome, idade, rel: R(55, 90), vivo: true, pele: R(0, 5), cabelo: R(0, 4) };
+  const p = { id: uid(), tipo, sexo, nome, idade, rel: R(55, 90), vivo: true, pele: R(0, 5), cabelo: R(0, 4), ap: R(5, 95), int: R(5, 95), doido: R(0, 100) };
   if (idade >= 18) p.prof = profissao(sexo);
   return p;
 }
@@ -71,6 +72,8 @@ function rotulo(r) {
   return '';
 }
 const quem = r => `${r.nome} (${rotulo(r).toLowerCase()})`;
+// Popup informativo (doença, escola nova...): só tem o botão OK
+function aviso(cat, ico, titulo, texto, info) { S.fila.push({ id: '__info', d: { cat, ico, titulo, texto, info } }); }
 function marco(titulo, texto) { S.fila.push({ id: '__marco', d: { titulo, texto } }); line(texto, 'good'); }
 function sexoParceiro() { return S.interesse === 'A' ? pick(['M', 'F']) : S.interesse; }
 function novoParceiro(nome, sexo, sufixo) {
@@ -120,7 +123,8 @@ function prender(n, motivo) {
 function adoecer(nome) {
   if (S.doencas.includes(nome)) return;
   S.doencas.push(nome);
-  line(`Você foi ${G('diagnosticado', 'diagnosticada')} com ${nome.toLowerCase()}. Dá para tratar em Atividades › Médico.`, 'bad', 'saude');
+  line(`Você está com ${nome.toLowerCase()}.`, 'bad', 'saude');
+  aviso('saude', '🤒', nome, `Você foi ${G('diagnosticado', 'diagnosticada')} com ${nome.toLowerCase()}.`, [['Gravidade', ['leve', 'leve', 'moderada', 'moderada', 'séria', 'séria', 'grave', 'grave', 'grave', 'grave'][DOENCAS[nome].grav]], ['Tratamento', 'Atividades › Médico']]);
 }
 const valorBens = () => S.bens.reduce((t, b) => t + b.valor, 0) + S.pertences.reduce((t, b) => t + b.valor, 0);
 const dividaBens = () => S.bens.reduce((t, b) => t + b.parcela * b.anos, 0);
@@ -132,6 +136,7 @@ const enemNota = () => Math.max(300, Math.min(1000, Math.round(330 + S.st.inteli
 
 // ================= nova vida =================
 function baseVida(o) {
+  Object.keys(o).forEach(k => { if (o[k] === undefined) delete o[k]; });
   const uf = o.uf || pick(Object.keys(ESTADOS));
   const dia = R(1, 28), mes = R(0, 11);
   return Object.assign({
@@ -144,7 +149,7 @@ function baseVida(o) {
     escola: null, formacao: 'nenhuma', cursos: [], faculdade: null, enem: null,
     emprego: null, bico: null, cargos: [], aposentado: false, pensao: 0, ultimoTrabalho: '',
     moradia: 'pais', bens: [], pertences: [], inv: { poupanca: 0, acoes: 0, cripto: 0 }, plano: false, doencas: [],
-    seguidores: 0, preso: 0, ficha: 0, fies: 0, emprestimos: [], cnh: { carro: false, moto: false }, herdeiro: null, flags: {},
+    hab: {}, seguidores: 0, preso: 0, ficha: 0, fies: 0, emprestimos: [], cnh: { carro: false, moto: false }, herdeiro: null, flags: {},
     rel: [], feitosAno: {}, feitos: [], ultimoEv: {}, fila: [], log: []
   }, o);
 }
@@ -223,7 +228,15 @@ function novaVidaLegado(id) {
   CUR_CAT = null; deltas = {};
   salvar(); render();
 }
-function novaEscola(tipo) { return { tipo, nome: pick(ESCOLAS), clubes: [] }; }
+function novaEscola(tipo, rede) {
+  rede = rede || (chance(.25) ? 'particular' : 'pública');
+  return { tipo, rede, nome: pick(rede === 'particular' ? ESCOLAS_PART : ESCOLAS_PUB), clubes: [] };
+}
+function avisoEscola() {
+  const e = S.escola, fund = e.tipo === 'fundamental';
+  aviso('escola', '🏫', fund ? 'Ensino fundamental' : 'Ensino médio', fund ? 'Você está começando o ensino fundamental.' : 'Você está começando o ensino médio.',
+    [['Escola', e.nome], ['Rede', e.rede === 'particular' ? 'Particular' : 'Pública'], ['Nível', fund ? 'Ensino fundamental' : 'Ensino médio'], ['Duração', fund ? '9 anos' : '3 anos']]);
+}
 
 // ================= eventos de sistema =================
 // Os eventos aleatórios ficam em eventos.js; aqui ficam os que o próprio jogo dispara.
@@ -363,8 +376,8 @@ function envelhecerFamilia() {
 }
 function escola() {
   CUR_CAT = 'escola';
-  if (S.idade === 6) { S.escola = novaEscola('fundamental'); line(`Você entrou no ensino fundamental, na ${S.escola.nome}.`); }
-  else if (S.idade === 15 && S.escola && S.escola.tipo === 'fundamental') { S.escola = Object.assign(novaEscola('medio'), { clubes: S.escola.clubes }); S.formacao = 'fundamental'; line(`Você começou o ensino médio, na ${S.escola.nome}.`); }
+  if (S.idade === 6) { S.escola = novaEscola('fundamental'); line(`Você entrou no ensino fundamental, na ${S.escola.nome}.`); avisoEscola(); }
+  else if (S.idade === 15 && S.escola && S.escola.tipo === 'fundamental') { S.escola = Object.assign(novaEscola('medio', S.escola.rede), { clubes: S.escola.clubes }); S.formacao = 'fundamental'; line(`Você começou o ensino médio, na ${S.escola.nome}.`); avisoEscola(); }
   else if (S.idade >= 18 && S.escola && S.escola.tipo === 'medio') { S.escola = null; S.formacao = 'medio'; mod('felicidade', 5); marco('Formatura do ensino médio', 'Você terminou a escola! Teve até festa no clube.'); }
   if (S.escola) {
     mod('inteligencia', R(0, 3));

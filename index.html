@@ -15,7 +15,7 @@
   --accent: #1F4FD1; --accent-ink: #FFFFFF; --sun: #F4B62C; --sun-ink: #1E1A0E;
   --good: #23885A; --warn: #C27D0E; --bad: #C6303B; --scrim: rgba(12, 18, 32, .5);
   --c-vida: #8A94A8; --c-familia: #8452C9; --c-escola: #2B7FD9; --c-amor: #D3457B; --c-saude: #23885A;
-  --c-dinheiro: #C2920E; --c-trabalho: #4F6F8F; --c-fama: #E0662B; --c-crime: #33363D;
+  --c-dinheiro: #C2920E; --c-trabalho: #4F6F8F; --c-fama: #E0662B; --c-crime: #33363D; --c-infancia: #E2482B;
   --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
@@ -27,7 +27,7 @@
     --accent: #3E6BF0; --accent-ink: #FFFFFF; --sun: #F5C24B; --sun-ink: #1E1A0E;
     --good: #4CC487; --warn: #E8AA3B; --bad: #F26A73; --scrim: rgba(0, 0, 0, .65);
     --c-vida: #8792AA; --c-familia: #B08AF0; --c-escola: #6AAEF5; --c-amor: #F27BA8; --c-saude: #4CC487;
-    --c-dinheiro: #EBC244; --c-trabalho: #8FAACB; --c-fama: #FF9561; --c-crime: #C9CCD3;
+    --c-dinheiro: #EBC244; --c-trabalho: #8FAACB; --c-fama: #FF9561; --c-crime: #C9CCD3; --c-infancia: #FF7A5C;
     color-scheme: dark;
   }
 }
@@ -36,7 +36,7 @@
   --accent: #3E6BF0; --accent-ink: #FFFFFF; --sun: #F5C24B; --sun-ink: #1E1A0E;
   --good: #4CC487; --warn: #E8AA3B; --bad: #F26A73; --scrim: rgba(0, 0, 0, .65);
   --c-vida: #8792AA; --c-familia: #B08AF0; --c-escola: #6AAEF5; --c-amor: #F27BA8; --c-saude: #4CC487;
-  --c-dinheiro: #EBC244; --c-trabalho: #8FAACB; --c-fama: #FF9561; --c-crime: #C9CCD3;
+  --c-dinheiro: #EBC244; --c-trabalho: #8FAACB; --c-fama: #FF9561; --c-crime: #C9CCD3; --c-infancia: #FF7A5C;
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
@@ -87,7 +87,7 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 19px; line-height
 .yr:not(.now) { opacity: .82; }
 .cat-vida { --dot: var(--c-vida); } .cat-familia { --dot: var(--c-familia); } .cat-escola { --dot: var(--c-escola); }
 .cat-amor { --dot: var(--c-amor); } .cat-saude { --dot: var(--c-saude); } .cat-dinheiro { --dot: var(--c-dinheiro); }
-.cat-trabalho { --dot: var(--c-trabalho); } .cat-fama { --dot: var(--c-fama); } .cat-crime { --dot: var(--c-crime); }
+.cat-trabalho { --dot: var(--c-trabalho); } .cat-fama { --dot: var(--c-fama); } .cat-crime { --dot: var(--c-crime); } .cat-infancia { --dot: var(--c-infancia); }
 .obit { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
 .obit h2 { font-family: var(--display); font-size: 22px; margin: 0; }
 .obit dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 0; }
@@ -168,17 +168,35 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 19px; line-height
 .legenda li { position: relative; padding-left: 14px; font-size: 13px; }
 .legenda li::before { content: ""; position: absolute; left: 0; top: .45em; width: 8px; height: 8px; border-radius: 50%; background: var(--dot); }
 
-/* modal de eventos */
-.modal { position: fixed; inset: 0; z-index: 20; background: var(--scrim); display: grid; place-items: center; padding: 16px var(--gy) 16px var(--gx); }
-.modal-card { background: var(--card); border-radius: 18px; padding: 20px; width: min(440px, 100%); max-height: 90%; overflow-y: auto; display: grid; gap: 12px; border: 1px solid var(--line); }
-.eyebrow { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
-.modal-card h2 { font-family: var(--display); font-weight: 800; font-size: 28px; line-height: 1.1; margin: 0; text-wrap: balance; }
-.modal-card p { margin: 0; font-size: 17px; }
-.modal.marco .modal-card { border: 3px solid var(--sun); }
-.choices { display: grid; gap: 8px; }
-.choices button { text-align: left; background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 11px 14px; font-weight: 700; }
-.choices button:hover { border-color: var(--accent); }
-.modal.marco .choices button { background: var(--sun); color: var(--sun-ink); border-color: var(--sun); text-align: center; }
+/* cartões de evento */
+.modal { position: fixed; inset: 0; z-index: 20; background: var(--scrim); display: grid; place-items: center; padding: 16px var(--gy) 16px var(--gx); --cor: var(--accent); }
+.cartao-ev { position: relative; background: var(--card); border: 4px solid var(--cor); border-radius: 22px; padding: 18px 0 20px; width: min(440px, 100%); max-height: 92%; overflow-y: auto; display: grid; gap: 14px; }
+.fechar-x { position: absolute; top: 8px; left: 8px; width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--paper); color: var(--bad); font-size: 18px; font-weight: 800; box-shadow: 0 2px 6px rgba(0,0,0,.15); z-index: 1; }
+.fita-ev { display: flex; align-items: center; gap: 10px; margin-left: 40px; padding: 6px 18px 6px 0; min-height: 44px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--cor) 35%, transparent) 45%, var(--cor)); }
+.fita-ev .av { width: 52px; height: 52px; margin-left: -24px; }
+.fita-ev #evNome { flex: 1; min-width: 0; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fita-ev em { margin-left: auto; font-family: var(--display); font-weight: 800; font-size: 22px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.25); }
+.ev-cab { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 0 20px; }
+.ev-cab span { font-size: 30px; }
+.ev-cab h2 { font-family: var(--display); font-weight: 800; font-size: 26px; line-height: 1.1; margin: 0; text-wrap: balance; }
+#evTexto { margin: 0; padding: 0 24px; font-size: 17px; text-align: center; }
+#evInfo { margin: 0 20px; display: grid; }
+#evInfo div { display: flex; justify-content: center; gap: 6px; padding: 6px 10px; }
+#evInfo div:nth-child(odd) { background: var(--paper); }
+#evInfo dt { font-weight: 700; } #evInfo dd { margin: 0; }
+#evBarras { display: grid; grid-template-columns: auto 1fr auto; gap: 8px 10px; align-items: center; padding: 0 20px; }
+#evBarras .lbl { font-weight: 700; text-align: right; }
+#evBarras .v { font-size: 12px; min-width: 26px; }
+#evForm { display: grid; gap: 12px; padding: 0 20px; }
+.campo-ev { display: grid; gap: 4px; font-weight: 700; color: var(--accent); }
+.campo-ev select { font: inherit; color: var(--ink); background: var(--paper); border: 2px solid var(--accent); border-radius: 6px; padding: 8px 10px; }
+.choices { display: grid; gap: 10px; padding: 0 20px; }
+.choices button { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 10px; padding: 13px 14px; font-weight: 700; font-size: 16px; box-shadow: 0 3px 0 color-mix(in srgb, var(--accent) 60%, #000); }
+.choices button.ok { background: var(--good); box-shadow: 0 3px 0 color-mix(in srgb, var(--good) 60%, #000); }
+.modal.marco .choices button.ok { background: var(--sun); color: var(--sun-ink); box-shadow: 0 3px 0 color-mix(in srgb, var(--sun) 60%, #000); }
+.surpresa { justify-self: center; background: none; border: 0; color: var(--accent); text-decoration: underline; font-weight: 700; font-size: 16px; }
+.av-btn { border: 0; padding: 0; background: none; border-radius: 50%; }
 
 /* fuga */
 .fuga-card { background: var(--card); border-radius: 18px; padding: 16px; width: min(380px, 100%); display: grid; gap: 10px; justify-items: center; }
@@ -201,7 +219,7 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 19px; line-height
 <header class="topo">
   <div class="topo-in">
     <button class="menu" data-go="menu" aria-label="Menu">☰</button>
-    <span id="avatar"></span>
+    <button id="avatar" class="av-btn" aria-label="Ver seu perfil"></button>
     <div class="quem">
       <div class="nome-linha"><span id="uf" class="uf mono"></span><h1 id="nome"></h1></div>
       <div class="sub" id="sub"></div>
@@ -226,12 +244,17 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 19px; line-height
   <div class="painel-topo"><button id="painelVoltar" aria-label="Fechar">✕</button><h2 id="painelTitulo"></h2><span></span></div>
   <div class="painel-corpo" id="painelCorpo"></div>
 </section>
-<section class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="modalText">
-  <div class="modal-card">
-    <div class="eyebrow mono" id="modalTag"></div>
-    <h2 id="modalTitle" hidden></h2>
-    <p id="modalText"></p>
+<section class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="evTexto">
+  <div class="cartao-ev">
+    <button class="fechar-x" id="modalX" aria-label="Fechar" hidden>✕</button>
+    <div class="fita-ev"><span id="evAv"></span><span id="evNome"></span><em id="evCat"></em></div>
+    <div class="ev-cab" id="evCab"><span id="evIco" aria-hidden="true"></span><h2 id="evTitulo"></h2></div>
+    <p id="evTexto"></p>
+    <dl id="evInfo"></dl>
+    <div id="evBarras"></div>
+    <div id="evForm"></div>
     <div class="choices" id="modalChoices"></div>
+    <button class="surpresa" id="evSurpresa">🎲 Me surpreenda!</button>
   </div>
 </section>
 <section class="modal" id="fuga" hidden role="dialog" aria-modal="true" aria-labelledby="fugaTitulo">

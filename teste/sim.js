@@ -5,7 +5,7 @@ const dir = process.argv[2] || '.';
 const N = +process.argv[3] || 200;
 const codigo = ['dados', 'eventos', 'motor', 'ui'].map(f => fs.readFileSync(path.join(dir, 'js', f + '.js'), 'utf8')).join('\n;\n');
 
-function el() { return { innerHTML: '', textContent: '', hidden: true, value: '', scrollTop: 0, dataset: {}, classList: { toggle() {}, add() {}, remove() {}, contains() { return false; } }, addEventListener() {}, setAttribute() {}, querySelector() { return { focus() {} }; }, focus() {}, getContext() { return null; } }; }
+function el() { return { innerHTML: '', textContent: '', hidden: true, value: '0', style: { setProperty() {} }, scrollTop: 0, dataset: {}, classList: { toggle() {}, add() {}, remove() {}, contains() { return false; } }, addEventListener() {}, setAttribute() {}, querySelector() { return { focus() {} }; }, focus() {}, getContext() { return null; } }; }
 const els = {};
 let clique = null;
 const ctx = {
@@ -17,7 +17,7 @@ const ctx = {
 };
 ctx.window = ctx; ctx.window.scrollTo = () => {};
 vm.createContext(ctx);
-vm.runInContext(codigo + '\n;globalThis.__api = { get S(){return S;}, set S(v){S=v;}, avancar, escolher, novaVida, novaVidaLegado, PAINEIS, EVENTOS_TODOS, render, get FUGA(){return FUGA;}, moverFuga, get CONQ(){return CONQ;} };', ctx);
+vm.runInContext(codigo + '\n;globalThis.__api = { get S(){return S;}, set S(v){S=v;}, avancar, escolher, novaVida, novaVidaLegado, PAINEIS, EVENTOS_TODOS, render, get FUGA(){return FUGA;}, moverFuga, get CARTAO(){return CARTAO;}, cliqueCartao, surpresa, abrirPerfil, get CONQ(){return CONQ;} };', ctx);
 const A = ctx.__api;
 const pick = a => a[Math.floor(Math.random() * a.length)];
 
@@ -33,10 +33,12 @@ function botoes(html) {
 function clicar(ds, noPainel) { clique({ target: { disabled: false, dataset: ds, closest(sel) { return sel === '#painel' ? (noPainel ? {} : null) : this; } } }); }
 function resolverFila() {
   let g = 0;
-  while ((A.render(), A.S.fila.length) && g++ < 50) {
+  while ((A.render(), A.S.fila.length || A.CARTAO) && g++ < 50) {
+    if (!A.S.fila.length) { A.cliqueCartao(A.CARTAO.form ? 'fazer' : 'ok'); continue; }
     const it = A.S.fila[0];
+    if (Math.random() < .15 && it.id !== '__marco' && it.id !== '__info') { A.surpresa(); continue; }
     const e = A.EVENTOS_TODOS.find(x => x.id === it.id);
-    const n = it.id === '__marco' ? 1 : (typeof e.escolhas === 'function' ? e.escolhas(A.S, it.d) : e.escolhas).length;
+    const n = it.id === '__marco' || it.id === '__info' ? 1 : (typeof e.escolhas === 'function' ? e.escolhas(A.S, it.d) : e.escolhas).length;
     A.escolher(Math.floor(Math.random() * n));
   }
 }
@@ -59,6 +61,7 @@ function explorar(raiz) {
     if (b.go) { pilha.push([b.go, b.arg]); continue; }
     stats.acoes[b.act] = (stats.acoes[b.act] || 0) + 1;
     clicar(b, true);
+    if (Math.random() < .05) A.abrirPerfil();
     if (b.act === 'fuga') { let k = 0; while (A.FUGA && !A.FUGA.fim && k++ < 300) A.moverFuga(pick([[0, 1], [0, -1], [1, 0], [-1, 0]])); }
     resolverFila();
     return;

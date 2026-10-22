@@ -148,12 +148,17 @@ const EVENTOS = [
     ] },
 
   // ---------- amizade e amor ----------
-  { id: 'amigo', cat: 'familia', min: 6, max: 70, gap: 4,
-    prep: () => { const p = pessoa('amigo', pick(['M', 'F']), 0); return { nome: p.nome, sexo: p.sexo }; },
-    texto: (s, d) => `${d.nome} puxou papo com você e parece querer ser ${d.sexo === 'F' ? 'sua amiga' : 'seu amigo'}.`,
+  { id: 'amigo', cat: 'familia', min: 3, max: 70, gap: 4, ico: '🤗',
+    titulo: (s, d) => d.p.sexo === 'F' ? 'Nova amiga' : 'Novo amigo',
+    prep: s => ({ p: pessoa('amigo', pick(['M', 'F']), Math.max(2, s.idade + R(-1, 1))) }),
+    pessoa: (s, d) => d.p,
+    texto: (s, d) => { const f = d.p.sexo === 'F', n = d.p.nome.split(' ')[0];
+      if (s.idade < 13) return `${f ? 'Uma garotinha chamada' : 'Um garotinho chamado'} ${n} quer ser ${f ? 'sua amiga' : 'seu amigo'}.`;
+      if (s.idade < 18) return `${f ? 'Uma garota chamada' : 'Um garoto chamado'} ${n} quer ser ${f ? 'sua amiga' : 'seu amigo'}.`;
+      return `${d.p.nome} puxou papo com você e parece querer ser ${f ? 'sua amiga' : 'seu amigo'}.`; },
     escolhas: [
-      { t: 'Fazer amizade', fx: (s, d) => { s.rel.push({ id: uid(), tipo: 'amigo', sexo: d.sexo, nome: d.nome, idade: Math.max(1, s.idade + R(-2, 2)), rel: R(55, 80), vivo: true }); mod('felicidade', 3); line(`Você fez ${d.sexo === 'F' ? 'uma nova amiga' : 'um novo amigo'}: ${d.nome}.`, 'good'); } },
-      { t: 'Manter distância', fx: (s, d) => line(`Você não deu muita conversa para ${d.nome}.`) }
+      { t: (s, d) => `Fazer amizade`, fx: (s, d) => { d.p.rel = R(55, 80); s.rel.push(d.p); mod('felicidade', 3); line(`Você fez amizade com ${d.p.nome}.`, 'good'); } },
+      { t: 'Recusar', fx: (s, d) => line(`Você não quis ser amig${G('o', 'a')} de ${d.p.nome}.`) }
     ] },
   { id: 'festa', cat: 'amor', min: 15, max: 30, gap: 3,
     texto: () => `Você foi ${G('convidado', 'convidada')} para uma festa no sábado.`,
@@ -161,11 +166,12 @@ const EVENTOS = [
       { t: 'Ir à festa', fx: () => { mod('felicidade', R(4, 8)); if (chance(.3)) conhecerAlguem('na festa'); else if (chance(.25)) { mod('saude', -4); line('Você exagerou na festa e passou o domingo de ressaca.', 'bad'); } else line('A festa foi ótima.', 'good'); } },
       { t: 'Ficar em casa', fx: () => line('Você ficou em casa vendo série.') }
     ] },
-  { id: 'match', cat: 'amor', min: 18, max: 65, gap: 3, cond: () => !achar('parceiro'),
-    prep: () => { const p = pessoa('parceiro', sexoParceiro(), 0); return { nome: p.nome, sexo: p.sexo }; },
-    texto: (s, d) => `Você deu match com ${d.nome} num aplicativo de namoro.`,
+  { id: 'match', cat: 'amor', min: 18, max: 65, gap: 3, ico: '📱', titulo: 'Deu match!', cond: () => !achar('parceiro'),
+    prep: s => ({ p: pessoa('parceiro', sexoParceiro(), Math.max(18, s.idade + R(-5, 5))) }),
+    pessoa: (s, d) => d.p,
+    texto: (s, d) => `Você deu match com ${d.p.nome.split(' ')[0]} num aplicativo de namoro.`,
     escolhas: [
-      { t: 'Marcar um encontro', fx: (s, d) => { if (chance(.35 + s.st.aparencia / 250)) novoParceiro(d.nome, d.sexo, ' depois de um encontro num barzinho'); else { mod('felicidade', -2); line(`O encontro com ${d.nome} foi esquisito. Não rolou.`); } } },
+      { t: 'Marcar um encontro', fx: (s, d) => { if (chance(.35 + s.st.aparencia / 250)) { d.p.rel = R(60, 85); d.p.casado = false; s.rel.push(d.p); mod('felicidade', R(5, 10)); line(`Você começou a namorar ${d.p.nome} depois de um encontro num barzinho.`, 'good'); } else { mod('felicidade', -2); line(`O encontro com ${d.p.nome} foi esquisito. Não rolou.`); } } },
       { t: 'Ignorar', fx: () => line('Você deixou o match sem resposta.') }
     ] },
   { id: 'ciume', cat: 'amor', min: 16, max: 80, cond: () => !!achar('parceiro'),
@@ -254,8 +260,7 @@ const EVENTOS = [
     fx: () => { line('Você ganhou um neto! A família está em festa.', 'good'); mod('felicidade', R(6, 12)); } },
 
   // ---------- saúde ----------
-  { id: 'gripe', cat: 'saude', min: 1, max: 110, gap: 3,
-    fx: () => { line('Você pegou uma gripe forte e passou dias de cama.', 'bad'); mod('saude', -R(3, 8)); } },
+  { id: 'gripe', cat: 'saude', min: 1, max: 110, gap: 3, fx: () => adoecer('Gripe') },
   { id: 'dentista', cat: 'saude', min: 8, max: 90, gap: 8,
     texto: () => 'Você está com uma dor de dente terrível.',
     escolhas: [
@@ -616,5 +621,71 @@ const EVENTOS = [
   { id: 'protagonista', cat: 'fama', min: 16, max: 90, once: true, cond: s => s.emprego && s.emprego.id === 'ator' && s.emprego.nivel >= 3,
     fx: () => { setFlag('estrela'); marco('Horário nobre', 'Você é protagonista da novela das nove. Seu rosto está em todas as revistas.'); } },
   { id: 'vizinhaFofoca', cat: 'vida', min: 14, max: 95, gap: 7,
-    fx: () => { mod('felicidade', -2); line('A vizinha fofoqueira espalhou pelo prédio que você está devendo o condomínio.'); } }
+    fx: () => { mod('felicidade', -2); line('A vizinha fofoqueira espalhou pelo prédio que você está devendo o condomínio.'); } },
+  // ---------- infância ----------
+  { id: 'fazDeConta', cat: 'infancia', min: 3, max: 7, gap: 2, ico: '💭', titulo: 'Faz de conta',
+    texto: () => 'Brincar de faz de conta é muito divertido, mas você não sabe qual brincadeira é a melhor. O que vai ser?',
+    escolhas: [
+      { t: 'Dirigir um carrinho', fx: () => { mod('felicidade', 3); line('Você dirigiu um carrinho imaginário pela casa toda, fazendo "vrum".'); } },
+      { t: 'Fazer comidinha', fx: () => { mod('felicidade', 3); line('Você fez um bolo de areia e serviu para a família.'); } },
+      { t: 'Brincar de casinha', fx: () => { mod('felicidade', 3); line('Você montou uma casinha com lençol e cadeiras.'); } },
+      { t: 'Ser super-herói', fx: () => { mod('felicidade', 3); mod('saude', 1); line('Você salvou o mundo de toalha amarrada no pescoço.'); } }
+    ] },
+  { id: 'desenho', cat: 'infancia', min: 3, max: 9, gap: 3, ico: '📺', titulo: 'Hora do desenho',
+    texto: () => 'Qual desenho você vai assistir hoje?',
+    escolhas: [
+      { t: 'Turma da Mônica', fx: () => { mod('felicidade', 2); mod('inteligencia', 1); line('Você assistiu Turma da Mônica e decidiu que o Cebolinha é o melhor.'); } },
+      { t: 'Sítio do Picapau Amarelo', fx: () => { mod('felicidade', 2); mod('inteligencia', 2); line('Você assistiu o Sítio e ficou com medo da Cuca.'); } },
+      { t: 'Castelo Rá-Tim-Bum', fx: () => { mod('felicidade', 2); mod('inteligencia', 2); line('Você assistiu Castelo Rá-Tim-Bum e aprendeu a lavar as mãos cantando.'); } },
+      { t: 'Desligar a TV e brincar na rua', fx: () => { mod('saude', 2); mod('felicidade', 2); line('Você trocou a TV pela rua.'); } }
+    ] },
+  { id: 'pesadelo', cat: 'infancia', min: 3, max: 9, gap: 3, ico: '👻', titulo: 'Pesadelo',
+    texto: () => 'Você acordou no meio da noite depois de sonhar com a Loira do Banheiro.',
+    escolhas: [
+      { t: 'Correr para a cama dos pais', fx: () => { paisVivos().forEach(r => { r.rel = clamp(r.rel + 3); }); line('Você dormiu espremid' + G('o', 'a') + ' entre os seus pais.'); } },
+      { t: () => 'Encarar sozinh' + G('o', 'a'), fx: () => { mod('felicidade', -2); mod('inteligencia', 1); line('Você ficou de olho aberto até amanhecer, mas sobreviveu.'); } },
+      { t: 'Acender a luz', fx: () => line('Você dormiu de luz acesa.') }
+    ] },
+  { id: 'sorvete', cat: 'infancia', min: 3, max: 10, gap: 3, ico: '🍦', titulo: 'Caminhão de sorvete',
+    texto: () => 'O carrinho de sorvete passou tocando aquela musiquinha.',
+    escolhas: [
+      { t: 'Pedir para os pais', fx: () => { if (chance(.6)) { mod('felicidade', 4); line('Você ganhou um picolé de uva.'); } else { mod('felicidade', -2); line('Seus pais disseram que tem sorvete em casa. Não tinha.'); } } },
+      { t: 'Chorar até ganhar', fx: () => { mod('felicidade', 3); paisVivos().forEach(r => { r.rel = clamp(r.rel - 3); }); line('Você chorou no meio da rua e ganhou o sorvete.'); } },
+      { t: 'Deixar pra lá', fx: () => line('Você viu o carrinho ir embora.') }
+    ] },
+  { id: 'recreio', cat: 'infancia', min: 6, max: 10, gap: 2, ico: '🔔', titulo: 'Recreio', cond: s => !!s.escola,
+    texto: () => 'No recreio, a turma vai brincar de...',
+    escolhas: [
+      { t: 'Pega-pega', fx: () => { mod('saude', 2); mod('felicidade', 2); line('Você correu o recreio inteiro no pega-pega.'); } },
+      { t: 'Queimada', fx: () => { if (chance(.3)) { mod('felicidade', -1); line('Você levou uma bolada na cara na queimada.'); } else { mod('felicidade', 3); popular(2); line('Você foi a última pessoa a ser queimada.'); } } },
+      { t: 'Esconde-esconde', fx: () => { mod('felicidade', 2); line('Você se escondeu tão bem que ninguém te achou até o sinal tocar.'); } },
+      { t: 'Amarelinha', fx: () => { mod('felicidade', 2); line('Você brincou de amarelinha com giz no pátio.'); } }
+    ] },
+  { id: 'pipa', cat: 'infancia', min: 6, max: 14, gap: 2, ico: '🪁', titulo: 'Tempo de pipa',
+    texto: () => 'Está ventando bem e a molecada foi soltar pipa no campinho.',
+    escolhas: [
+      { t: 'Soltar pipa', fx: () => { mod('felicidade', 4); line('Sua pipa subiu tão alto que virou um pontinho no céu.'); } },
+      { t: 'Correr atrás de pipa avoada', fx: () => { if (chance(.25)) { mod('saude', -4); line('Você correu atrás de uma pipa, tropeçou e ralou o joelho.', 'bad'); } else { mod('felicidade', 4); mod('saude', 1); line('Você pegou uma pipa avoada. Agora é sua.'); } } },
+      { t: 'Ficar só olhando', fx: () => line('Você ficou olhando a criançada soltar pipa.') }
+    ] },
+  { id: 'bolinhaGude', cat: 'infancia', min: 6, max: 11, gap: 3, ico: '🔵', titulo: 'Bolinha de gude',
+    texto: () => 'Um colega te desafiou para uma partida de bolinha de gude.',
+    escolhas: [
+      { t: 'Jogar valendo', fx: () => { if (chance(.5)) { mod('felicidade', 4); line('Você ganhou todas as bolinhas do colega, inclusive a olho de gato.'); } else { mod('felicidade', -3); line('Você perdeu suas bolinhas preferidas.'); } } },
+      { t: 'Jogar de brincadeira', fx: () => { mod('felicidade', 2); line('Você jogou bolinha de gude a tarde toda.'); } },
+      { t: 'Recusar', fx: () => line('Você recusou o desafio.') }
+    ] },
+  { id: 'rodinhas', cat: 'infancia', min: 5, max: 8, once: true, ico: '🚲', titulo: 'Sem rodinhas',
+    texto: () => 'Seu pai quer tirar as rodinhas da sua bicicleta.',
+    escolhas: [
+      { t: 'Topar', fx: () => { if (chance(.6)) { mod('felicidade', 6); line('Você aprendeu a andar de bicicleta sem rodinhas!', 'good'); } else { mod('saude', -3); line('Você caiu três vezes, mas na quarta foi.', 'bad'); } } },
+      { t: 'Ainda não', fx: () => line('As rodinhas ficaram mais um tempo.') }
+    ] },
+  { id: 'celular', cat: 'infancia', min: 9, max: 13, once: true, ico: '📱', titulo: 'Primeiro celular',
+    texto: () => 'Todo mundo da sala já tem celular, menos você. Como vai pedir?',
+    escolhas: [
+      { t: 'Prometer notas boas', fx: () => { mod('inteligencia', 3); if (chance(.6)) { mod('felicidade', 6); line('Você prometeu tirar notas boas e ganhou um celular.', 'good'); } else line('Seus pais disseram que vão pensar.'); } },
+      { t: 'Fazer chantagem emocional', fx: () => { paisVivos().forEach(r => { r.rel = clamp(r.rel - 4); }); if (chance(.4)) { mod('felicidade', 6); line('A chantagem funcionou. Você ganhou um celular.'); } else line('A chantagem não funcionou.'); } },
+      { t: 'Juntar a mesada', fx: () => { karma(2); line('Você começou a juntar a mesada num cofrinho de porquinho.'); } }
+    ] }
 ];

@@ -108,39 +108,69 @@ function reputacao() {
   return k >= 85 ? 'Exemplar' : k >= 65 ? 'Boa' : k >= 40 ? 'Normal' : k >= 20 ? 'Duvidosa' : 'Péssima';
 }
 
-// ================= modal de eventos =================
-function renderModal() {
-  const item = S.fila[0];
+// ================= cartões (eventos, avisos, resultados, perfil) =================
+// Eventos do jogo ficam em S.fila e têm prioridade. CARTAO é um popup da interface que não é salvo.
+let CARTAO = null;
+let ultimoItem = null;
+function cartaoDoItem(item) {
+  if (item.id === '__marco') return { cat: 'vida', etiqueta: 'Marco da vida', ico: '🎉', titulo: item.d.titulo, texto: item.d.texto, marco: true, botoes: [{ t: 'Seguir em frente', attrs: 'data-escolha="0"', cls: 'ok' }] };
+  if (item.id === '__info') { const d = item.d; return { cat: d.cat, etiqueta: CATS[d.cat] || 'Vida', ico: d.ico, titulo: d.titulo, texto: d.texto, info: d.info, botoes: [{ t: 'OK', attrs: 'data-escolha="0"', cls: 'ok' }] }; }
+  const e = EV[item.id];
+  if (!e) return null;
+  if (e.cond) { try { if (!e.cond(S)) return null; } catch (err) { return null; } }
+  const d = item.d, lista = typeof e.escolhas === 'function' ? e.escolhas(S, d) : e.escolhas;
+  const p = e.pessoa ? e.pessoa(S, d) : null;
+  return {
+    cat: e.cat, ico: e.ico || CAT_ICO[e.cat], titulo: typeof e.titulo === 'function' ? e.titulo(S, d) : e.titulo,
+    etiqueta: p ? (p.tipo === 'amigo' ? (p.sexo === 'F' ? 'Amiga' : 'Amigo') : p.tipo === 'parceiro' ? 'Paquera' : rotulo(p)) : (CATS[e.cat] || 'Vida'),
+    texto: typeof e.texto === 'function' ? e.texto(S, d) : e.texto, pessoa: p,
+    info: p ? [['Nome', p.nome], ['Gênero', p.sexo === 'F' ? 'Feminino' : 'Masculino'], ['Idade', String(p.idade)]] : null,
+    barras: p ? [['Aparência', p.ap], ['Inteligência', p.int], ['Doideira', p.doido]] : null,
+    botoes: lista.map((c, i) => ({ t: rotuloTexto(c.t), attrs: `data-escolha="${i}"` })), surpresa: lista.length > 1
+  };
+}
+function desenharCartao(c) {
   const m = $('modal');
-  if (!item || !S.vivo) { m.hidden = true; return; }
-  if (item.id === '__marco') {
-    const novo = m.hidden || !m.classList.contains('marco');
-    m.classList.add('marco');
-    $('modalTag').textContent = `Marco da vida · ${anos(S.idade)}`;
-    $('modalTitle').hidden = false; $('modalTitle').textContent = item.d.titulo;
-    $('modalText').textContent = item.d.texto;
-    $('modalChoices').innerHTML = '<button data-escolha="0">Seguir em frente</button>';
-    if (novo) { som('marco'); confete(); }
-  } else {
-    m.classList.remove('marco');
-    const e = EV[item.id];
-    let valido = !!e;
-    if (e && e.cond) { try { valido = !!e.cond(S); } catch (err) { valido = false; } }
-    if (!valido) { S.fila.shift(); renderModal(); return; }
-    const lista = typeof e.escolhas === 'function' ? e.escolhas(S, item.d) : e.escolhas;
-    $('modalTag').textContent = `${anos(S.idade)} · ${CATS[e.cat] || 'Vida'}`;
-    $('modalTitle').hidden = true;
-    $('modalText').textContent = typeof e.texto === 'function' ? e.texto(S, item.d) : e.texto;
-    $('modalChoices').innerHTML = lista.map((c, i) => `<button data-escolha="${i}">${esc(rotuloTexto(c.t))}</button>`).join('');
-  }
+  m.classList.toggle('marco', !!c.marco);
+  m.style.setProperty('--cor', c.marco ? 'var(--sun)' : `var(--c-${c.cat || 'vida'})`);
+  $('evAv').innerHTML = c.pessoa ? avatar(c.pessoa) : '';
+  $('evNome').textContent = c.pessoa ? c.pessoa.nome : '';
+  $('evCat').textContent = c.etiqueta || '';
+  $('evCab').hidden = !c.titulo;
+  $('evIco').textContent = c.ico || '';
+  $('evTitulo').textContent = c.titulo || '';
+  $('evTexto').textContent = c.texto || '';
+  $('evTexto').hidden = !c.texto;
+  $('evInfo').innerHTML = (c.info || []).map(([k, v]) => `<div><dt>${esc(k)}:</dt><dd>${esc(v)}</dd></div>`).join('');
+  $('evInfo').hidden = !(c.info && c.info.length);
+  $('evBarras').innerHTML = (c.barras || []).map(([k, v, d]) => `<span class="lbl">${k}</span><span class="bar"><span style="width:${v}%;background:${cor(v)}"></span></span><span class="v mono">${d === undefined ? '' : (d > 0 ? '+' : '') + d}</span>`).join('');
+  $('evBarras').hidden = !(c.barras && c.barras.length);
+  $('evForm').innerHTML = (c.form || []).map(f => `<label class="campo-ev"><span>${f.label}:</span><select id="f_${f.id}">${f.opcoes.map((o, i) => `<option value="${i}">${o}</option>`).join('')}</select></label>`).join('');
+  $('evForm').hidden = !c.form;
+  $('modalChoices').innerHTML = c.botoes.map(b => `<button ${b.attrs} class="${b.cls || ''}">${esc(b.t)}</button>`).join('');
+  $('evSurpresa').hidden = !c.surpresa;
+  $('modalX').hidden = !c.fechar;
+  const novo = m.hidden;
   m.hidden = false;
-  const b = $('modalChoices').querySelector('button');
-  if (b) b.focus();
+  if (novo) { const b = $('modalChoices').querySelector('button') || $('modalX'); if (b) b.focus(); }
+}
+function renderModal() {
+  const item = S.vivo ? S.fila[0] : null;
+  if (item) {
+    const c = cartaoDoItem(item);
+    if (!c) { S.fila.shift(); renderModal(); return; }
+    if (item.id === '__marco' && ultimoItem !== item) { som('marco'); confete(); }
+    ultimoItem = item;
+    desenharCartao(c);
+    return;
+  }
+  if (CARTAO) { desenharCartao(CARTAO); return; }
+  $('modal').hidden = true;
 }
 function escolher(i) {
   deltas = {};
   const item = S.fila.shift();
-  if (item.id !== '__marco') {
+  if (item.id !== '__marco' && item.id !== '__info') {
     const e = EV[item.id];
     const lista = typeof e.escolhas === 'function' ? e.escolhas(S, item.d) : e.escolhas;
     CUR_CAT = e.cat || 'vida';
@@ -149,6 +179,38 @@ function escolher(i) {
   }
   morteImediata();
   salvar(); render();
+}
+function surpresa() {
+  const item = S.fila[0];
+  if (!item || item.id === '__marco' || item.id === '__info') return;
+  const e = EV[item.id], lista = typeof e.escolhas === 'function' ? e.escolhas(S, item.d) : e.escolhas;
+  escolher(Math.floor(Math.random() * lista.length));
+}
+// Roda uma ação e, se ela não abriu outro evento, mostra o resultado num popup
+function comResultado(fn, titulo, ico) {
+  const linhas = S.log[S.log.length - 1].l, n = linhas.length, fila = S.fila.length;
+  fn();
+  const novas = linhas.slice(n);
+  if (!S.vivo || S.fila.length > fila || !novas.length) return;
+  const ult = novas[novas.length - 1], ruim = novas.some(x => x.tone === 'bad');
+  const barras = STATS.filter(([k]) => deltas[k]).map(([k, nome]) => [nome, S.st[k], deltas[k]]);
+  CARTAO = {
+    cat: ult.c, etiqueta: CATS[ult.c] || 'Vida', ico: ico || (ruim ? '😬' : '😄'),
+    titulo: titulo || (ruim ? pick(['Deu ruim', 'Que pena', 'Ih...']) : pick(['Foi demais', 'Mandou bem', 'Que dia!', 'Valeu a pena'])),
+    texto: novas.map(x => x.t).join(' '), barras,
+    info: deltas.dinheiro ? [['Dinheiro', `${deltas.dinheiro > 0 ? '+' : '−'}${fmt(Math.abs(deltas.dinheiro))}`]] : null,
+    botoes: [{ t: 'OK', attrs: 'data-cartao="ok"', cls: 'ok' }]
+  };
+}
+function abrirPerfil() {
+  if (!S) return;
+  const eu = { nome: S.nome, sexo: S.sexo, idade: S.idade, pele: S.pele, cabelo: S.cabelo };
+  CARTAO = {
+    cat: 'vida', etiqueta: 'Você', ico: '🔍', titulo: 'Perfil', pessoa: eu, fechar: true, botoes: [],
+    info: [['Gênero', S.sexo === 'F' ? 'Feminino' : 'Masculino'], ['Idade', String(S.idade)], ['Localização', S.pais === 'Brasil' ? `${S.cidade}, ${ESTADOS[S.uf].nome}` : S.pais], ['Signo', S.signo], ['Time', S.time], ['Reputação', reputacao()]],
+    barras: STATS.map(([k, n]) => [n, S.st[k]])
+  };
+  renderModal();
 }
 function morteImediata() { if (S.vivo && S.st.saude <= 0) morte(); }
 
@@ -340,7 +402,8 @@ const INTERACOES = [
 function painelPessoa(id) {
   const r = S.rel.find(x => x.id === id);
   if (!r) return null;
-  let h = `<div class="perfil">${avatar(r, 'grande')}<div><b>${esc(r.nome)}</b><span>${rotulo(r)} · ${anos(r.idade)}${r.prof ? ' · ' + r.prof : ''}</span><div class="kv2"><span>Relação</span>${mini(r.rel)}</div></div></div>`;
+  const attrs = r.ap !== undefined ? `<span>Aparência</span>${mini(r.ap)}<span>Inteligência</span>${mini(r.int)}<span>Doideira</span>${mini(r.doido)}` : '';
+  let h = `<div class="perfil">${avatar(r, 'grande')}<div><b>${esc(r.nome)}</b><span>${rotulo(r)} · ${anos(r.idade)}${r.prof ? ' · ' + r.prof : ''}</span><div class="kv2"><span>Relação</span>${mini(r.rel)}${attrs}</div></div></div>`;
   if (!S.vivo || !r.vivo) return { titulo: r.nome.split(' ')[0], html: h };
   const lista = INTERACOES.filter(a => a.ok(r) && (!S.preso || a.id === 'conversar'));
   h += secao('Interações') + lista.map(a => {
@@ -365,10 +428,20 @@ function aposta(v) {
 }
 const ATIV = [
   { id: 'mente', ico: '🧘', nome: 'Mente e corpo', sub: 'Cuide de você', min: 6, itens: [
-    { id: 'academia', nome: 'Academia', desc: 'Saúde e aparência', min: 13, custo: 1200, fx: () => { mod('saude', R(3, 7)); mod('aparencia', R(1, 3)); line('Você treinou pesado o ano todo.', '', 'saude'); } },
-    { id: 'meditar', nome: 'Meditar', desc: 'Felicidade', min: 10, fx: () => { mod('felicidade', R(3, 7)); line('Você meditou e ficou mais em paz.', '', 'saude'); } },
+    { id: 'academia', nome: 'Academia', desc: 'Saúde e aparência', min: 13, custo: 1200, ico: '🏋️',
+      form: [{ id: 'treino', label: 'Escolha o treino', opcoes: ['Musculação', 'Aeróbico', 'Funcional'] }, { id: 'freq', label: 'Escolha a frequência', opcoes: ['2 vezes por semana', '4 vezes por semana', 'Todo dia'] }],
+      fx: v => { const f = v[1] + 1; if (v[1] === 2 && chance(.15)) { mod('saude', -5); line('Você exagerou no treino e se machucou.', 'bad', 'saude'); return; }
+        if (v[0] !== 1) mod('aparencia', R(1, 2) * f); if (v[0] !== 0) mod('saude', R(1, 3) * f); mod('felicidade', 1);
+        line(`Você fez ${['musculação', 'aeróbico', 'treino funcional'][v[0]]} ${['duas vezes por semana', 'quatro vezes por semana', 'todo dia'][v[1]]} o ano inteiro.`, '', 'saude'); } },
+    { id: 'meditar', nome: 'Meditar', desc: 'Felicidade', min: 10, ico: '🧘',
+      form: [{ id: 'tempo', label: 'Escolha o tempo', opcoes: ['10 minutos por dia', '30 minutos por dia', '1 hora por dia'] }],
+      fx: v => { mod('felicidade', R(2, 4) * (v[0] + 1)); line(`Você meditou ${['dez minutos', 'meia hora', 'uma hora'][v[0]]} por dia e ficou mais em paz.`, '', 'saude'); } },
     { id: 'ler', nome: 'Ler um livro', desc: 'Inteligência', min: 7, fx: () => { mod('inteligencia', R(1, 3)); mod('felicidade', R(1, 3)); line(`Você leu "${pick(LIVROS)}".`, '', 'escola'); } },
-    { id: 'caminhar', nome: 'Caminhar na orla', desc: 'Saúde', min: 8, fx: () => { mod('saude', R(2, 4)); mod('felicidade', 1); line('Você caminhou na orla todo fim de tarde.', '', 'saude'); } },
+    { id: 'caminhar', nome: 'Caminhada', desc: 'Saúde', min: 6, ico: '👟',
+      form: [{ id: 'ritmo', label: 'Escolha seu ritmo', opcoes: ['Passeio', 'Caminhada rápida', 'Corrida'] }, { id: 'tempo', label: 'Escolha seu tempo', opcoes: ['15 minutos', '30 minutos', '1 hora'] }],
+      fx: v => { if (v[0] === 2 && chance(.1)) { mod('saude', -4); line('Você torceu o pé correndo na calçada esburacada.', 'bad', 'saude'); return; }
+        const g = Math.round((v[0] + 1) * (1 + v[1] * .5)); mod('saude', R(g, g + 2)); mod('felicidade', 1);
+        line(`Você fez ${['um passeio', 'uma caminhada rápida', 'uma corrida'][v[0]]} de ${['15 minutos', '30 minutos', '1 hora'][v[1]]} todo fim de tarde.`, '', 'saude'); } },
     { id: 'pelada', nome: 'Pelada com os amigos', desc: 'Saúde e felicidade', min: 8, fx: () => { if (chance(.12)) { mod('saude', -6); line('Você torceu o tornozelo na pelada de domingo.', 'bad', 'saude'); } else { mod('saude', R(2, 5)); mod('felicidade', R(2, 4)); line('Você fez dois gols na pelada de domingo.', '', 'saude'); } } },
     { id: 'danca', nome: 'Aula de forró', desc: 'Felicidade e aparência', min: 12, custo: 600, fx: () => { mod('felicidade', R(3, 6)); mod('aparencia', 1); if (chance(.2)) conhecerAlguem('na aula de forró'); else line('Você aprendeu a dançar forró pé de serra.'); } },
     { id: 'yoga', nome: 'Yoga', desc: 'Saúde e felicidade', min: 12, custo: 800, fx: () => { mod('saude', R(2, 4)); mod('felicidade', R(2, 4)); line('Você fez aulas de yoga.', '', 'saude'); } }
@@ -448,7 +521,10 @@ const ATIV = [
     { id: 'mudar', nome: 'Escolher um país', desc: 'Visto e passagem', fx: () => { S.fila.push({ id: 'emigrar', d: {} }); } }
   ] },
   { id: 'testamento', ico: '📜', nome: 'Testamento', sub: 'Quem fica com a herança', min: 18, painel: 'testamento' },
-  { id: 'crime', ico: '🦹', nome: 'Crime', sub: 'Por sua conta e risco', min: 12, itens: [
+  { id: 'crime', ico: '🦹', nome: 'Crime', sub: 'Por sua conta e risco', min: 6, itens: [
+    { id: 'travessura', nome: 'Travessura', desc: 'Tocar campainha e sair correndo', min: 6, fx: () => { karma(-1); if (chance(.25)) { paisVivos().forEach(r => { r.rel = clamp(r.rel - 5); }); line('O vizinho reconheceu você e contou para os seus pais.', 'bad', 'crime'); } else { mod('felicidade', 4); line('Você tocou a campainha do prédio inteiro e saiu correndo.', '', 'crime'); } } },
+    { id: 'carteira', nome: 'Bater carteira', desc: 'No ônibus lotado', min: 12, fx: () => { karma(-5); if (chance(.3)) prender(1, 'furto'); else { const v = R(2, 30) * 10; grana(v); line(`Você bateu uma carteira no ônibus. Tinha ${fmt(v)}.`, '', 'crime'); } } },
+    { id: 'encomenda', nome: 'Roubar encomenda', desc: 'Pacote esquecido na portaria', min: 12, fx: () => { karma(-4); if (chance(.2)) prender(1, 'furto'); else { const o = pick([['uma airfryer', 400], ['um fone de ouvido', 200], ['capinhas de celular', 30], ['um kit de skincare', 150]]); grana(o[1]); line(`Você pegou uma encomenda da portaria. Era ${o[0]}.`, '', 'crime'); } } },
     { id: 'pichar', nome: 'Pichar um muro', desc: 'Adrenalina', fx: () => {
       mod('felicidade', 3); karma(-2);
       if (chance(.25)) { if (S.idade < 18) { paisVivos().forEach(r => { r.rel = clamp(r.rel - 10); }); line(`Você foi ${G('pego', 'pega')} pichando e seus pais tiveram que pagar a pintura.`, 'bad', 'crime'); } else { grana(-2000); S.ficha++; line(`Você foi ${G('pego', 'pega')} pichando e pagou multa.`, 'bad', 'crime'); } }
@@ -457,6 +533,9 @@ const ATIV = [
     { id: 'pirata', nome: 'Vender produto pirata', desc: 'Dinheiro médio, risco médio', min: 16, fx: () => { karma(-3); if (chance(.25)) prender(2, 'pirataria'); else { const v = R(2, 8) * 1000; grana(v); line(`Você faturou ${fmt(v)} vendendo produto pirata no camelô.`, '', 'crime'); } } },
     { id: 'golpe', nome: 'Aplicar golpe do Pix', desc: 'Prejudica gente honesta', min: 18, fx: () => { karma(-10); if (chance(.35)) prender(R(2, 5), 'estelionato'); else { const v = R(1, 8) * 1000; grana(v); line(`Você aplicou um golpe e levou ${fmt(v)}. A vítima era uma senhora aposentada.`, 'bad', 'crime'); } } },
     { id: 'banca', nome: 'Montar banca de jogo do bicho', desc: 'Dinheiro alto, risco alto', min: 18, fx: () => { karma(-6); if (chance(.3)) prender(R(2, 4), 'contravenção'); else { const v = R(5, 30) * 1000; grana(v); line(`Sua banca do bicho faturou ${fmt(v)} no ano.`, '', 'crime'); } } },
+    { id: 'hackear', nome: 'Hackear', desc: 'Invadir a conta de alguém', min: 14, mostra: () => S.st.inteligencia >= 60, fx: () => { karma(-6); if (chance(.25)) prender(2, 'crime cibernético'); else { const v = R(1, 20) * 1000; grana(v); line(`Você invadiu uma conta e transferiu ${fmt(v)}.`, '', 'crime'); } } },
+    { id: 'carro', nome: 'Roubar um carro', desc: 'Dinheiro alto, risco alto', min: 18, fx: () => { karma(-8); if (chance(.35)) prender(R(3, 6), 'roubo de veículo'); else { const v = R(10, 40) * 1000; grana(v); line(`Você roubou um carro e vendeu no desmanche por ${fmt(v)}.`, '', 'crime'); } } },
+    { id: 'desvio', nome: 'Desviar dinheiro do trabalho', desc: 'Arriscado e difícil de esconder', min: 18, mostra: () => !!S.emprego, fx: () => { karma(-8); const pol = S.emprego.id === 'pol'; if (chance(.3)) prender(R(3, 8), pol ? 'corrupção' : 'peculato'); else { const v = Math.round(S.emprego.sal * R(10, 40) / 100); grana(v); line(pol ? `Você fez rachadinha no gabinete e embolsou ${fmt(v)}.` : `Você desviou ${fmt(v)} da empresa.`, '', 'crime'); } } },
     { id: 'banco', nome: 'Assaltar um banco', desc: 'Muito dinheiro, risco altíssimo', min: 18, fx: () => { karma(-15); if (chance(.25)) { const v = R(100, 800) * 1000; grana(v); line(`O assalto deu certo. Você levou ${fmt(v)}.`, '', 'crime'); } else prender(R(6, 12), 'assalto a banco'); } }
   ] }
 ];
@@ -480,13 +559,27 @@ function painelAtividades() {
 }
 function painelCategoria(id) {
   const c = ATIV.find(x => x.id === id);
-  const h = c.itens.filter(i => !i.mostra || i.mostra()).map(i => {
+  let topo = '';
+  if (c.id === 'mente') topo = row({ ico: '🥋', titulo: 'Artes marciais', sub: 'Jiu-jítsu, capoeira, judô...', go: 'artes' }) + row({ ico: '🎸', titulo: 'Instrumentos', sub: 'Violão, cavaquinho, pandeiro...', go: 'instrumentos' });
+  const h = topo + c.itens.filter(i => !i.mostra || i.mostra()).map(i => {
     const custo = i.custo ? pago(i.custo) : 0, k = `at:${c.id}:${i.id}`;
     const min = i.min ?? c.min;
     const motivo = S.idade < min ? `A partir de ${min} anos` : feito(k) ? 'Feito este ano' : custo && S.dinheiro < custo ? 'Sem saldo' : '';
-    return row({ titulo: i.nome, sub: i.desc, tag: motivo || (custo ? fmt(custo) : 'Grátis'), attrs: act('item', { cat: c.id, id: i.id }), off: !!motivo });
+    return row({ titulo: i.nome, sub: i.desc, tag: motivo || (custo ? fmt(custo) : 'Grátis'), attrs: act(i.form ? 'form' : 'item', { cat: c.id, id: i.id }), off: !!motivo });
   }).join('');
   return { titulo: c.nome, html: h || nota('Nada para fazer aqui agora.') };
+}
+const NIVEIS_MUSICA = ['iniciante', 'básico', 'intermediário', 'avançado', 'virtuose'];
+const faixaDe = (x, n) => x.faixas[Math.min(4, Math.floor(n / 20))];
+function painelAulas(tipo) {
+  const arte = tipo === 'arte', lista = arte ? ARTES : INSTRUMENTOS, min = arte ? 5 : 6, custo = pago(arte ? 1200 : 1000);
+  const h = nota('Uma aula por modalidade a cada ano. Quanto mais você treina, mais sobe de nível.') + lista.map(x => {
+    const n = S.hab[x.id] || 0, k = 'aula:' + x.id;
+    const sub = n ? (arte ? `Nível ${n} · ${x.corda ? 'corda' : 'faixa'} ${faixaDe(x, n)}` : `Nível ${n} · ${NIVEIS_MUSICA[Math.min(4, Math.floor(n / 20))]}`) : (arte ? `Pratique ${x.nome.toLowerCase()}` : `Faça aulas de ${x.nome.toLowerCase()}`);
+    const motivo = S.idade < min ? `A partir de ${min} anos` : feito(k) ? 'Feito este ano' : custo && S.dinheiro < custo ? 'Sem saldo' : '';
+    return row({ ico: x.ico, titulo: x.nome, sub, tag: motivo || (custo ? fmt(custo) : 'Grátis'), attrs: act('aula', { tipo, id: x.id }), off: !!motivo });
+  }).join('');
+  return { titulo: arte ? 'Artes marciais' : 'Instrumentos', html: h };
 }
 function painelMedico() {
   let h = secao('Consultas');
@@ -661,6 +754,7 @@ const PAINEIS = {
   relacoes: painelRelacoes, pessoa: painelPessoa,
   atividades: painelAtividades, cat: painelCategoria, medico: painelMedico, compras: painelCompras, bichos: painelBichos,
   ferias: painelFerias, emprestimo: painelEmprestimo, testamento: painelTestamento, identidade: painelIdentidade,
+  artes: () => painelAulas('arte'), instrumentos: () => painelAulas('inst'),
   bens: painelBens, financas: painelFinancas, investimentos: painelInvestimentos, imoveis: painelImoveis, veiculos: painelVeiculos, pertences: painelPertences,
   menu: painelMenu
 };
@@ -673,6 +767,30 @@ const ACOES = {
     if (custo) grana(-custo);
     S.feitosAno[`at:${c.id}:${i.id}`] = true;
     i.fx();
+  },
+  form(ds) {
+    const c = ATIV.find(x => x.id === ds.cat), i = c.itens.find(x => x.id === ds.id);
+    CARTAO = { cat: 'saude', etiqueta: c.nome, ico: i.ico || c.ico, titulo: i.nome, texto: i.desc + (i.custo && pago(i.custo) ? ` · ${fmt(pago(i.custo))} por ano` : ''), form: i.form, fechar: true, alvo: ds, botoes: [{ t: 'Fazer', attrs: 'data-cartao="fazer"' }] };
+  },
+  aula(ds) {
+    const arte = ds.tipo === 'arte', x = (arte ? ARTES : INSTRUMENTOS).find(y => y.id === ds.id);
+    S.feitosAno['aula:' + x.id] = true;
+    grana(-pago(arte ? 1200 : 1000));
+    const antes = S.hab[x.id] || 0, n = Math.min(100, antes + R(6, 14) + Math.round((arte ? S.st.saude : S.st.inteligencia) / 25));
+    S.hab[x.id] = n;
+    CUR_CAT = arte ? 'saude' : 'escola';
+    if (arte) {
+      mod('saude', R(1, 3)); mod('felicidade', R(1, 3));
+      if (x.id === 'capoeira') popular(2);
+      const fa = Math.min(4, Math.floor(antes / 20)), fn = Math.min(4, Math.floor(n / 20));
+      if (fn > fa) { line(`Você ganhou a ${x.corda ? 'corda' : 'faixa'} ${x.faixas[fn]} no ${x.nome.toLowerCase()}!`, 'good'); if (fn === 4) setFlag('faixapreta'); }
+      else line(`Você treinou ${x.nome.toLowerCase()} o ano todo.`);
+    } else {
+      mod('felicidade', 2); mod('inteligencia', 1);
+      if (n >= 30) setFlag('violao');
+      const na = Math.min(4, Math.floor(antes / 20)), nn = Math.min(4, Math.floor(n / 20));
+      line(nn > na ? `Você chegou ao nível ${NIVEIS_MUSICA[nn]} no ${x.nome.toLowerCase()}!` : `Você fez aulas de ${x.nome.toLowerCase()} o ano todo.`, nn > na ? 'good' : '');
+    }
   },
   crianca(ds) {
     S.feitosAno['cr:' + ds.id] = true; CUR_CAT = 'familia';
@@ -829,6 +947,7 @@ document.addEventListener('click', ev => {
   const b = ev.target.closest('button');
   if (!b || b.disabled || !S) return;
   if (b.dataset.escolha !== undefined) { escolher(+b.dataset.escolha); return; }
+  if (b.dataset.cartao) { cliqueCartao(b.dataset.cartao); return; }
   if (b.dataset.go) { abrirPainel(b.dataset.go, b.dataset.arg, b.closest('#painel') === null); return; }
   const a = b.dataset.act;
   if (!a || !ACOES[a]) return;
@@ -836,16 +955,35 @@ document.addEventListener('click', ev => {
   if (!acaoValida(a, b.dataset)) { render(); return; }
   deltas = {};
   CUR_CAT = null;
-  const r = ACOES[a](b.dataset);
+  let r;
+  if (COM_RESULTADO.includes(a)) comResultado(() => { r = ACOES[a](b.dataset); }); else r = ACOES[a](b.dataset);
   CUR_CAT = null;
   if (r === 'pronto') { window.scrollTo({ top: 0 }); return; }
   morteImediata();
   salvar(); render();
 });
+const COM_RESULTADO = ['item', 'crianca', 'escola', 'rel', 'medico', 'tratar', 'passeio', 'viagem', 'aula', 'pet', 'remicao', 'patio', 'trab', 'vaga', 'concorrer', 'enem', 'supletivo'];
+function cliqueCartao(tipo) {
+  const c = CARTAO;
+  CARTAO = null;
+  if (tipo === 'fazer' && c && c.alvo) {
+    const cat = ATIV.find(x => x.id === c.alvo.cat), i = cat.itens.find(x => x.id === c.alvo.id);
+    const vals = i.form.map(f => +($('f_' + f.id).value || 0));
+    deltas = {};
+    comResultado(() => { const custo = i.custo ? pago(i.custo) : 0; if (custo) grana(-custo); S.feitosAno[`at:${cat.id}:${i.id}`] = true; i.fx(vals); CUR_CAT = null; }, i.nome, i.ico);
+    morteImediata(); salvar(); render();
+    return;
+  }
+  renderModal();
+}
+$('modalX').addEventListener('click', () => { CARTAO = null; renderModal(); });
+$('evSurpresa').addEventListener('click', surpresa);
+$('avatar').addEventListener('click', abrirPerfil);
 $('age').addEventListener('click', () => { avancar(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 $('painelVoltar').addEventListener('click', voltar);
 document.addEventListener('keydown', e => {
   if (!$('fuga').hidden) { const d = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key]; if (d) { e.preventDefault(); moverFuga(d); } return; }
+  if (e.key === 'Escape' && CARTAO && !S.fila.length) { CARTAO = null; renderModal(); return; }
   if (e.key === 'Escape' && !$('painel').hidden && $('modal').hidden) voltar();
 });
 
@@ -959,7 +1097,7 @@ function toast(msg) {
 if (window.claude && window.claude.hot && window.claude.hot.snapshot) window.claude.hot.snapshot(() => ({ S }));
 function start(data) {
   const salvo = (data && data.S) || lerLS(SAVE_KEY, null);
-  if (salvo && salvo.versao === 3) { S = salvo; render(); } else novaVida();
+  if (salvo && salvo.versao === 3) { S = salvo; S.hab = S.hab || {}; render(); } else novaVida();
 }
 const hot = window.claude && window.claude.hot;
 hot && hot.ready ? hot.ready(start) : start((hot && hot.data) || {});
