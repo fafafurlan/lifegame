@@ -198,16 +198,23 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 19px; line-height
 .surpresa { justify-self: center; background: none; border: 0; color: var(--accent); text-decoration: underline; font-weight: 700; font-size: 16px; }
 .av-btn { border: 0; padding: 0; background: none; border-radius: 50%; }
 
-/* fuga */
-.fuga-card { background: var(--card); border-radius: 18px; padding: 16px; width: min(380px, 100%); display: grid; gap: 10px; justify-items: center; }
-.fuga-card h2 { font-family: var(--display); margin: 0; }
-.grade { display: grid; grid-template-columns: repeat(11, 1fr); width: 100%; max-width: 330px; aspect-ratio: 1; border-radius: 8px; overflow: hidden; }
-.grade .c.parede { background: var(--ink); } .grade .c.chao { background: var(--paper); }
-.grade .c.eu { background: var(--accent); border-radius: 50%; } .grade .c.guarda { background: var(--bad); border-radius: 50%; } .grade .c.saida { background: var(--good); }
-.ctrl { display: grid; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(2, 44px); gap: 6px; }
+/* minijogos */
+.jogo-card { background: var(--card); border: 4px solid var(--c-crime); border-radius: 22px; padding: 16px; width: min(400px, 100%); max-height: 96%; overflow-y: auto; display: grid; gap: 10px; justify-items: center; }
+.jogo-card h2 { font-family: var(--display); margin: 0; text-align: center; }
+#jogoTexto { margin: 0; text-align: center; font-size: 14px; }
+.grade { display: grid; width: 100%; max-width: 340px; aspect-ratio: 1; border-radius: 8px; overflow: hidden; touch-action: none; user-select: none; }
+.grade .c { display: grid; place-items: center; font-size: clamp(12px, 4.5vw, 20px); line-height: 1; overflow: hidden; }
+.grade .c .av { width: 100%; height: 100%; background: none; }
+.grade .c.parede { background: var(--accent); } .grade .c.chao { background: #FBF3D9; } .grade .c.saida { background: var(--good); } .grade .c.cao { background: #F2B8B5; }
+.grade.hack { background: #12151C; gap: 3px; padding: 3px; }
+.grade .c.hk { background: #1E2430; border-radius: 6px; }
+.grade .c.hk i { width: 70%; height: 70%; border-radius: 50%; display: grid; place-items: center; color: #fff; font-style: normal; font-weight: 800; font-size: 20px; }
+.ctrl { display: grid; grid-template-columns: repeat(3, 56px); grid-template-rows: repeat(2, 46px); gap: 6px; }
 .ctrl button { border: 1px solid var(--line); background: var(--paper); border-radius: 10px; font-size: 20px; }
 .ctrl .cima { grid-column: 2; }
-#fugaMsg { color: var(--muted); text-align: center; margin: 0; font-size: 14px; }
+#jogoMsg { color: var(--muted); text-align: center; margin: 0; font-size: 14px; font-weight: 700; }
+#evExtra { display: grid; place-items: center; }
+.placa { width: 140px; height: 140px; }
 
 .toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(220px + env(safe-area-inset-bottom, 0px)); z-index: 30;
   background: var(--ink); color: var(--paper); border-radius: 12px; padding: 10px 16px; max-width: calc(100% - 32px); font-weight: 700; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
@@ -252,17 +259,19 @@ h1 { font-family: var(--display); font-weight: 800; font-size: 19px; line-height
     <p id="evTexto"></p>
     <dl id="evInfo"></dl>
     <div id="evBarras"></div>
+    <div id="evExtra"></div>
     <div id="evForm"></div>
     <div class="choices" id="modalChoices"></div>
     <button class="surpresa" id="evSurpresa">🎲 Me surpreenda!</button>
   </div>
 </section>
-<section class="modal" id="fuga" hidden role="dialog" aria-modal="true" aria-labelledby="fugaTitulo">
-  <div class="fuga-card">
-    <h2 id="fugaTitulo">Fuga da prisão</h2>
-    <div class="grade" id="fugaGrade"></div>
-    <p id="fugaMsg"></p>
-    <div class="ctrl" id="fugaCtrl">
+<section class="modal" id="jogo" hidden role="dialog" aria-modal="true" aria-labelledby="jogoTitulo">
+  <div class="jogo-card">
+    <h2 id="jogoTitulo"></h2>
+    <p id="jogoTexto"></p>
+    <div class="grade" id="jogoGrade"></div>
+    <p id="jogoMsg"></p>
+    <div class="ctrl" id="jogoCtrl">
       <button class="cima" data-d="0,-1" aria-label="Cima">↑</button>
       <button data-d="-1,0" aria-label="Esquerda">←</button><button data-d="0,1" aria-label="Baixo">↓</button><button data-d="1,0" aria-label="Direita">→</button>
     </div>

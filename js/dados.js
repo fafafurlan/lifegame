@@ -137,7 +137,6 @@ const CARREIRAS = [
   { id: 'app', m: 'Motorista de aplicativo', f: 'Motorista de aplicativo', sal: 34000, idade: 18, form: 'nenhuma', cnh: 'carro', carro: true },
   { id: 'adm', m: 'Auxiliar administrativo', f: 'Auxiliar administrativa', sal: 34000, idade: 18, form: 'medio' },
   { id: 'servidor', m: 'Servidor público', f: 'Servidora pública', sal: 70000, idade: 18, form: 'medio', concurso: true },
-  { id: 'militar', m: 'Militar do Exército', f: 'Militar do Exército', sal: 48000, idade: 18, form: 'medio', flag: 'reservista', flagMsg: 'Exige ter servido o Exército' },
   { id: 'musico', m: 'Músico', f: 'Musicista', sal: 26000, idade: 16, form: 'nenhuma', flag: 'violao', flagMsg: 'Exige saber tocar um instrumento' },
   { id: 'fut', m: 'Jogador de futebol', f: 'Jogadora de futebol', sal: 0, idade: 17, idadeMax: 33, form: 'nenhuma', flag: 'base', flagMsg: 'Exige passar na peneira de um time' },
   { id: 'ator', m: 'Ator de novela', f: 'Atriz de novela', sal: 60000, idade: 16, form: 'nenhuma', teste: true },
@@ -169,3 +168,35 @@ const CARGOS = [
   { id: 'presidente', m: 'Presidente da República', f: 'Presidenta da República', sal: 500000, idade: 35, base: .1, req: 'governador' }
 ];
 const NIVEIS_ATOR = ['Figurante', 'Elenco de apoio', 'Coadjuvante', 'Protagonista', 'Estrela da emissora'];
+
+// Exército: patentes da carreira militar
+const PATENTES = ['Soldado', 'Cabo', 'Sargento', 'Tenente', 'Capitão', 'Major', 'Tenente-coronel', 'Coronel', 'General'];
+// Redes sociais: peso decide a fatia dos seguidores que cada uma recebe
+const PLATAFORMAS = [
+  { id: 'instagram', nome: 'Instagram', ico: '📸', acao: 'Postar foto' }, { id: 'tiktok', nome: 'TikTok', ico: '🎵', acao: 'Gravar vídeo curto' },
+  { id: 'youtube', nome: 'YouTube', ico: '▶️', acao: 'Subir vídeo' }, { id: 'kwai', nome: 'Kwai', ico: '🎬', acao: 'Gravar vídeo curto' },
+  { id: 'twitch', nome: 'Twitch', ico: '🎮', acao: 'Fazer live jogando' }, { id: 'x', nome: 'X', ico: '💬', acao: 'Postar opinião' }
+];
+const NEGOCIOS = [
+  { id: 'lanchonete', nome: 'Lanchonete', custo: 40000, ico: '🍔' }, { id: 'salao', nome: 'Salão de beleza', custo: 60000, ico: '💇' },
+  { id: 'roupas', nome: 'Loja de roupas', custo: 90000, ico: '👕' }, { id: 'academia', nome: 'Academia de bairro', custo: 150000, ico: '🏋️' },
+  { id: 'startup', nome: 'Startup de tecnologia', custo: 250000, ico: '💻' }
+];
+const MATERIAS = ['Português', 'Matemática', 'História', 'Geografia', 'Ciências', 'Educação Física', 'Inglês', 'Artes'];
+// Vítimas do arrombamento: quanto mais rica, mais objetos de valor e mais cachorros
+const VITIMAS = [
+  { nome: 'Um barbeiro', itens: 4, caes: 1, mult: 1 }, { nome: 'Uma professora aposentada', itens: 4, caes: 1, mult: 1 },
+  { nome: 'Um dentista', itens: 5, caes: 2, mult: 2 }, { nome: 'Um empresário', itens: 6, caes: 2, mult: 3 }, { nome: 'Um jogador de futebol', itens: 7, caes: 3, mult: 5 }
+];
+const OBJETOS = [['📺', 'uma TV', 1500], ['💻', 'um notebook', 2500], ['🎸', 'um violão', 600], ['🧸', 'um ursinho de pelúcia', 30], ['📱', 'um celular', 1800], ['⌚', 'um relógio', 900], ['🎮', 'um videogame', 2000], ['💍', 'um anel', 3000]];
+// Prova teórica do Detran: placas desenhadas em SVG (ver ui.js)
+const PLACAS = [
+  { id: 'pare', certo: 'Parada obrigatória', erradas: ['Proibido parar', 'Pare se quiser'] },
+  { id: 'preferencia', certo: 'Dê a preferência', erradas: ['Sentido obrigatório', 'Fim da preferência'] },
+  { id: 'vel60', certo: 'Velocidade máxima de 60 km/h', erradas: ['Velocidade mínima de 60 km/h', 'Rodovia número 60'] },
+  { id: 'estacionar', certo: 'Proibido estacionar', erradas: ['Estacionamento regulamentado', 'Proibido parar e estacionar'] },
+  { id: 'lombada', certo: 'Lombada à frente', erradas: ['Pista irregular', 'Ponte estreita'] },
+  { id: 'curva', certo: 'Curva acentuada à direita', erradas: ['Vire à direita', 'Pista sinuosa à esquerda'] },
+  { id: 'esquerda', certo: 'Proibido virar à esquerda', erradas: ['Siga em frente ou à esquerda', 'Retorno proibido'] },
+  { id: 'pedestre', certo: 'Passagem de pedestres', erradas: ['Área escolar', 'Proibido pedestres'] }
+];

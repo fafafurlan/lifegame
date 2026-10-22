@@ -114,7 +114,7 @@ let CARTAO = null;
 let ultimoItem = null;
 function cartaoDoItem(item) {
   if (item.id === '__marco') return { cat: 'vida', etiqueta: 'Marco da vida', ico: '🎉', titulo: item.d.titulo, texto: item.d.texto, marco: true, botoes: [{ t: 'Seguir em frente', attrs: 'data-escolha="0"', cls: 'ok' }] };
-  if (item.id === '__info') { const d = item.d; return { cat: d.cat, etiqueta: CATS[d.cat] || 'Vida', ico: d.ico, titulo: d.titulo, texto: d.texto, info: d.info, botoes: [{ t: 'OK', attrs: 'data-escolha="0"', cls: 'ok' }] }; }
+  if (item.id === '__info') { const d = item.d, p = d.pessoa; return { cat: d.cat, etiqueta: p ? (p.tipo === 'pet' ? 'Animal de estimação' : rotulo(p)) : (CATS[d.cat] || 'Vida'), pessoa: p, ico: d.ico, titulo: d.titulo, texto: d.texto, info: d.info, botoes: [{ t: 'OK', attrs: 'data-escolha="0"', cls: 'ok' }] }; }
   const e = EV[item.id];
   if (!e) return null;
   if (e.cond) { try { if (!e.cond(S)) return null; } catch (err) { return null; } }
@@ -147,6 +147,8 @@ function desenharCartao(c) {
   $('evBarras').hidden = !(c.barras && c.barras.length);
   $('evForm').innerHTML = (c.form || []).map(f => `<label class="campo-ev"><span>${f.label}:</span><select id="f_${f.id}">${f.opcoes.map((o, i) => `<option value="${i}">${o}</option>`).join('')}</select></label>`).join('');
   $('evForm').hidden = !c.form;
+  $('evExtra').innerHTML = c.html || '';
+  $('evExtra').hidden = !c.html;
   $('modalChoices').innerHTML = c.botoes.map(b => `<button ${b.attrs} class="${b.cls || ''}">${esc(b.t)}</button>`).join('');
   $('evSurpresa').hidden = !c.surpresa;
   $('modalX').hidden = !c.fechar;
@@ -245,7 +247,7 @@ const fim = () => (S.vivo ? '' : nota('Esta vida acabou. Continue com um herdeir
 // ---------- ocupação ----------
 function painelOcupacao() {
   const [titulo] = estagio();
-  if (!S.vivo) return { titulo, html: fim() };
+  if (!S.vivo) return { titulo: 'Profissão', html: fim() };
   let h = '';
   if (S.preso) {
     h += `<div class="cartao"><b>Pena</b><span>Falta${S.preso > 1 ? 'm' : ''} ${anos(S.preso)} de prisão.</span></div>`;
@@ -263,59 +265,167 @@ function painelOcupacao() {
     h += row({ ico: '📺', titulo: 'Assistir desenho', sub: 'Felicidade, um pouco de inteligência', attrs: act('crianca', { id: 'desenho' }), off: feito('cr:desenho') || S.idade < 1 });
     return { titulo, html: h };
   }
+  h += secao('Você');
+  let algo = false;
+  if (S.escola) { algo = true; h += row({ ico: '🏫', titulo: `${S.escola.tipo === 'fundamental' ? 'Ensino fundamental' : 'Ensino médio'} (${S.escola.rede})`, sub: 'Notas', barra: S.st.inteligencia, go: 'escola' }); }
+  if (S.faculdade) { algo = true; h += row({ ico: '🎓', titulo: `Faculdade de ${S.faculdade.curso}`, sub: 'Notas', barra: S.st.inteligencia, go: 'escola' }); }
+  if (S.emprego) { algo = true; h += row({ ico: S.emprego.id === 'militar' ? '🎖️' : S.emprego.id === 'pol' ? '🏛️' : '💼', titulo: esc(S.emprego.titulo), sub: 'Desempenho', barra: S.emprego.desemp, go: 'trabalho' }); }
+  if (S.bico) { algo = true; h += row({ ico: '🧢', titulo: S.bico.nome, sub: `Bico · ${fmt(S.bico.sal)} por ano`, tag: 'Largar', attrs: act('largarBico') }); }
+  if (S.negocio) { algo = true; h += row({ ico: '🏪', titulo: S.negocio.nome, sub: `Sua empresa · vale ${fmt(S.negocio.valor)}`, go: 'empresa' }); }
+  if (S.aposentado) { algo = true; h += row({ ico: '🏖️', titulo: G('Aposentado', 'Aposentada'), sub: `Pensão de ${fmt(S.pensao)} por ano` }); }
+  if (!algo) h += nota('Você está sem ocupação no momento.');
+  h += secao('Carreiras especiais');
+  const ator = CARREIRAS.find(c => c.id === 'ator'), fut = CARREIRAS.find(c => c.id === 'fut');
+  h += row({ ico: '🏛️', titulo: `${G('Político', 'Política')} <span class="rot">(carreira especial)</span>`, sub: S.idade < 18 ? 'A partir de 18 anos' : 'De vereador a presidente', go: S.idade >= 18 ? 'politica' : undefined, off: S.idade < 18 });
+  h += row({ ico: '🏪', titulo: `${G('Empresário', 'Empresária')} <span class="rot">(carreira especial)</span>`, sub: S.idade < 18 ? 'A partir de 18 anos' : 'Abra seu próprio negócio', go: S.idade >= 18 ? 'empresa' : undefined, off: S.idade < 18 });
+  h += row({ ico: '📱', titulo: `Influenciador${G('', 'a')} <span class="rot">(carreira especial)</span>`, sub: S.idade < 13 ? 'A partir de 13 anos' : 'Cresça nas redes sociais', go: S.idade >= 13 ? 'redes' : undefined, off: S.idade < 13 });
+  h += row({ ico: '🎬', titulo: `${tituloCarreira(ator)} <span class="rot">(carreira especial)</span>`, sub: podeCandidatar(ator) || (feito('vaga:ator') ? 'Tente no ano que vem' : 'Fazer teste na emissora'), attrs: act('vaga', { id: 'ator' }), off: !!podeCandidatar(ator) || feito('vaga:ator') || !!S.emprego });
+  h += row({ ico: '⚽', titulo: `${tituloCarreira(fut)} <span class="rot">(carreira especial)</span>`, sub: podeCandidatar(fut) || (feito('vaga:fut') ? 'Tente no ano que vem' : 'Tentar o time principal'), attrs: act('vaga', { id: 'fut' }), off: !!podeCandidatar(fut) || feito('vaga:fut') || !!S.emprego });
+  h += secao('Todos');
+  h += row({ ico: '🧢', titulo: 'Bicos', sub: S.idade < 12 ? 'A partir de 12 anos' : 'Ganhe um dinheiro rápido', go: S.idade >= 12 && !S.bico ? 'bicos' : undefined, off: S.idade < 12 || !!S.bico });
+  h += row({ ico: '📞', titulo: 'Agência de empregos', sub: S.idade < 18 ? 'A partir de 18 anos' : 'Propostas prontas, sem entrevista', go: S.idade >= 18 && !S.emprego ? 'recrutador' : undefined, off: S.idade < 18 || !!S.emprego });
+  h += row({ ico: '💵', titulo: 'Vagas de emprego', sub: S.idade < 16 ? 'A partir de 16 anos' : 'CLT, concursos e estágio', go: S.idade >= 16 && !S.emprego ? 'vagas' : undefined, off: S.idade < 16 || !!S.emprego });
+  h += row({ ico: '🛡️', titulo: 'Exército', sub: S.idade < 18 ? 'A partir de 18 anos' : 'Carreira militar, de soldado a general', go: S.idade >= 18 ? 'militar' : undefined, off: S.idade < 18 });
+  if (!S.escola && S.idade >= 17) h += row({ ico: '📚', titulo: 'Estudos', sub: 'ENEM, faculdade, cursinho e supletivo', go: 'estudos' });
+  return { titulo: 'Profissão', html: h };
+}
+function painelEscola() {
+  if (!S.escola && !S.faculdade) return null;
+  let h = '';
   if (S.escola) {
     const e = S.escola;
-    h += `<div class="cartao"><b>${esc(e.nome)}</b><span>${ocupacao()}</span>
-      <div class="kv2"><span>Notas</span>${mini(S.st.inteligencia)}<span>Popularidade</span>${mini(S.popularidade)}</div>
+    h += `<div class="cartao"><b>${esc(e.nome)}</b><span>${ocupacao()} · rede ${e.rede}</span>
       ${e.clubes.length ? `<span class="nota">Participa de: ${e.clubes.map(c => CLUBES.find(x => x.id === c).nome.toLowerCase()).join(', ')}.</span>` : ''}</div>`;
-    h += secao('Escola');
-    h += row({ ico: '📖', titulo: 'Estudar mais', sub: 'Notas', attrs: act('escola', { id: 'estudar' }), off: feito('es:estudar') });
-    h += row({ ico: '🙋', titulo: 'Conversar com a professora', sub: 'Notas e reputação', attrs: act('escola', { id: 'professor' }), off: feito('es:professor') });
+    h += secao('Atividades');
+    h += row({ ico: '🔁', titulo: 'Mudar de escola', sub: e.rede === 'particular' ? 'Pedir para ir para uma escola pública' : 'Pedir para ir para uma escola particular', attrs: act('mudarEscola'), off: feito('mudarEscola') });
+    h += row({ ico: '✏️', titulo: 'Turma e clubes', sub: 'Popularidade', barra: S.popularidade, go: 'clubes' });
+    h += row({ ico: '🧑‍🏫', titulo: 'Corpo docente', sub: 'Interaja com seus professores', go: 'professores' });
+    h += row({ ico: '🩹', titulo: 'Enfermaria', sub: 'Visite a enfermeira da escola', attrs: act('escola', { id: 'enfermaria' }), off: feito('es:enfermaria') });
+    h += row({ ico: '📚', titulo: 'Estudar mais', sub: 'Faça um esforço extra', attrs: act('escola', { id: 'estudar' }), off: feito('es:estudar') });
     h += row({ ico: '🤝', titulo: 'Fazer amizades', sub: 'Popularidade, talvez um amigo novo', attrs: act('escola', { id: 'amizade' }), off: feito('es:amizade') });
     h += row({ ico: '🏃', titulo: 'Matar aula', sub: 'Divertido, até alguém descobrir', attrs: act('escola', { id: 'matar' }), off: feito('es:matar') || S.idade < 10 });
-    h += row({ ico: '🎭', titulo: 'Clubes e atividades', sub: 'Futsal, teatro, fanfarra, robótica...', go: 'clubes' });
-    if (e.tipo === 'medio') h += row({ ico: '📝', titulo: 'ENEM', sub: S.enem ? `Sua nota: ${S.enem}` : 'A prova acontece no 3º ano (aos 17)', attrs: '', off: true });
-    if (S.idade >= 16) h += row({ ico: '🚪', titulo: 'Largar a escola', sub: 'Você para de estudar', attrs: act('largarEscola') });
-  } else if (S.faculdade) {
+    if (e.tipo === 'medio') h += row({ ico: '📝', titulo: 'ENEM', sub: S.enem ? `Sua nota: ${S.enem}` : 'A prova acontece no 3º ano (aos 17)', off: true });
+    h += row({ ico: '👋', titulo: 'Abandonar os estudos', sub: S.idade < 16 ? 'Só a partir dos 16 anos' : 'Largar a escola', attrs: act('largarEscola'), off: S.idade < 16 });
+  } else {
     const f = S.faculdade;
     h += `<div class="cartao"><b>${f.curso}</b><span>${f.tipo === 'bolsa' ? 'Bolsa ProUni' : f.fies ? 'Particular com Fies' : f.tipo === 'pública' ? 'Universidade federal' : 'Faculdade particular'} · ${f.ano + 1}º de ${CURSOS[f.curso].anos} anos</span></div>`;
-    h += secao('Faculdade');
-    h += row({ ico: '📖', titulo: 'Estudar mais', sub: 'Inteligência', attrs: act('escola', { id: 'estudar' }), off: feito('es:estudar') });
+    h += secao('Atividades');
+    h += row({ ico: '📚', titulo: 'Estudar mais', sub: 'Inteligência', attrs: act('escola', { id: 'estudar' }), off: feito('es:estudar') });
     h += row({ ico: '🎉', titulo: 'Festa universitária', sub: 'Felicidade, talvez um amor', attrs: act('escola', { id: 'festa' }), off: feito('es:festa') });
-    h += row({ ico: '🚪', titulo: 'Trancar a faculdade', sub: 'Você perde o progresso do curso', attrs: act('trancar') });
+    h += row({ ico: '👋', titulo: 'Trancar a faculdade', sub: 'Você perde o progresso do curso', attrs: act('trancar') });
   }
-  if (S.emprego) {
-    const e = S.emprego;
-    h += secao('Trabalho');
-    h += `<div class="cartao"><b>${esc(e.titulo)}${e.id === 'ator' ? ` · ${NIVEIS_ATOR[e.nivel]}` : ''}</b><span class="mono">${fmt(e.sal)} por ano · ${anos(e.anos)} no cargo${e.id === 'pol' ? ` · mandato: falta${e.mandato > 1 ? 'm' : ''} ${anos(e.mandato)}` : ''}</span>
-      <div class="kv2"><span>Desempenho</span>${mini(e.desemp)}</div></div>`;
-    h += row({ ico: '💪', titulo: 'Trabalhar mais', sub: 'Desempenho', attrs: act('trab', { id: 'esforco' }), off: feito('trab:esforco') });
-    if (e.id !== 'pol') h += row({ ico: '💸', titulo: 'Pedir aumento', sub: 'Funciona melhor com bom desempenho', attrs: act('trab', { id: 'aumento' }), off: feito('trab:aumento') });
-    h += row({ ico: '☕', titulo: 'Puxar papo com os colegas', sub: 'Felicidade, talvez um amigo', attrs: act('trab', { id: 'colegas' }), off: feito('trab:colegas') });
-    h += row({ ico: '🚪', titulo: e.id === 'pol' ? 'Renunciar ao mandato' : 'Pedir demissão', attrs: act('trab', { id: 'demissao' }) });
-    if (S.idade >= 60 && e.id !== 'pol') h += row({ ico: '🏖️', titulo: 'Aposentar', sub: 'Pensão pelo resto da vida', attrs: act('trab', { id: 'aposentar' }) });
-  } else if (S.aposentado) {
-    h += secao('Aposentadoria') + nota(`${G('Aposentado', 'Aposentada')}, com pensão de ${fmt(S.pensao)} por ano.`);
+  return { titulo: S.escola ? 'Escola' : 'Faculdade', html: h };
+}
+function painelProfessores() {
+  if (!S.escola) return null;
+  if (!S.escola.profs) S.escola.profs = novosProfs();
+  return { titulo: 'Corpo docente', html: S.escola.profs.map(p => row({ ico: avatar(p), titulo: `${esc(p.nome)} <span class="rot">(${p.materia})</span>`, sub: 'Relação', barra: p.rel, go: 'professor', arg: p.id })).join('') };
+}
+const INTER_PROF = [
+  ['conversar', 'Conversar'], ['ajuda', 'Pedir ajuda com a matéria'], ['elogiar', 'Elogiar a aula'], ['maca', 'Levar uma maçã'], ['nota', 'Reclamar da nota'], ['xingar', 'Xingar']
+];
+function painelProfessor(id) {
+  const p = S.escola && S.escola.profs && S.escola.profs.find(x => x.id === id);
+  if (!p) return null;
+  let h = `<div class="perfil">${avatar(p, 'grande')}<div><b>${esc(p.nome)}</b><span>${G('Seu', 'Sua')} ${p.sexo === 'F' ? 'professora' : 'professor'} de ${p.materia}</span><div class="kv2"><span>Relação</span>${mini(p.rel)}</div></div></div>`;
+  h += secao('Interações') + INTER_PROF.map(([k, n]) => row({ titulo: n, attrs: act('prof', { id: p.id, acao: k }), off: feito(`prof:${p.id}:${k}`), tag: feito(`prof:${p.id}:${k}`) ? 'Este ano já' : '' })).join('');
+  return { titulo: p.nome.split(' ')[0], html: h };
+}
+function painelTrabalho() {
+  const e = S.emprego;
+  if (!e) return null;
+  let h = `<div class="cartao"><b>${esc(e.titulo)}${e.id === 'ator' ? ` · ${NIVEIS_ATOR[e.nivel]}` : ''}</b><span class="mono">${fmt(e.sal)} por ano · ${anos(e.anos)} no cargo${e.id === 'pol' ? ` · mandato: falta${e.mandato > 1 ? 'm' : ''} ${anos(e.mandato)}` : ''}</span>
+    <div class="kv2"><span>Desempenho</span>${mini(e.desemp)}</div></div>`;
+  h += secao('Atividades');
+  h += row({ ico: '💪', titulo: 'Trabalhar mais', sub: 'Desempenho', attrs: act('trab', { id: 'esforco' }), off: feito('trab:esforco') });
+  if (e.id !== 'pol' && e.id !== 'militar') h += row({ ico: '💸', titulo: 'Pedir aumento', sub: 'Funciona melhor com bom desempenho', attrs: act('trab', { id: 'aumento' }), off: feito('trab:aumento') });
+  h += row({ ico: '☕', titulo: 'Puxar papo com os colegas', sub: 'Felicidade, talvez um amigo', attrs: act('trab', { id: 'colegas' }), off: feito('trab:colegas') });
+  h += row({ ico: '👋', titulo: e.id === 'pol' ? 'Renunciar ao mandato' : e.id === 'militar' ? 'Pedir baixa do Exército' : 'Pedir demissão', attrs: act('trab', { id: 'demissao' }) });
+  if (S.idade >= 60 && e.id !== 'pol') h += row({ ico: '🏖️', titulo: 'Aposentar', sub: 'Pensão pelo resto da vida', attrs: act('trab', { id: 'aposentar' }) });
+  return { titulo: 'Trabalho', html: h };
+}
+function painelEstudos() {
+  let h = '';
+  if (S.formacao === 'medio' || S.formacao === 'superior') {
+    if (!S.faculdade) h += row({ ico: '🎓', titulo: 'Entrar na faculdade', sub: S.enem ? `Com sua nota do ENEM (${S.enem})` : 'Precisa fazer o ENEM antes', attrs: act('faculdade'), off: !S.enem });
+    h += row({ ico: '📝', titulo: 'Fazer o ENEM', sub: S.enem ? `Nota atual: ${S.enem}` : 'Uma vez por ano', attrs: act('enem'), off: feito('enem') });
+    if (!flag('cursinho')) h += row({ ico: '🏫', titulo: 'Fazer cursinho', sub: 'Aumenta a nota do próximo ENEM', tag: fmt(preco(6000)), attrs: act('cursinho'), off: S.dinheiro < preco(6000) });
+  } else h += row({ ico: '📚', titulo: 'Supletivo (EJA)', sub: 'Concluir o ensino médio em um ano', tag: 'Grátis', attrs: act('supletivo'), off: feito('supletivo') });
+  return { titulo: 'Estudos', html: h };
+}
+function ofertasDoAno() {
+  if (!S.feitosAno.ofertas) {
+    const ok = CARREIRAS.filter(c => !podeCandidatar(c) && !c.teste && !c.concurso && c.id !== 'fut' && !c.estudante);
+    S.feitosAno.ofertas = ok.sort(() => Math.random() - .5).slice(0, 3).map(c => ({ id: c.id, sal: Math.round(c.sal * PAISES[S.pais].sal * R(85, 115) / 100) }));
   }
-  if (S.bico) {
-    h += secao('Bico');
-    h += row({ ico: '🛵', titulo: S.bico.nome, sub: `${fmt(S.bico.sal)} por ano`, tag: 'Largar', attrs: act('largarBico') });
+  return S.feitosAno.ofertas;
+}
+function painelRecrutador() {
+  const of = ofertasDoAno();
+  let h = nota('A agência encontrou estas vagas para o seu perfil. É só aceitar.');
+  h += of.length ? of.map((o, i) => { const c = CARREIRAS.find(x => x.id === o.id); return row({ ico: '📄', titulo: tituloCarreira(c), sub: 'Aceitar a proposta', tag: `${fmt(o.sal)}/ano`, attrs: act('oferta', { i }), off: !!S.emprego || o.usada }); }).join('') : nota('Nenhuma vaga para o seu perfil este ano. Estudar ajuda.');
+  return { titulo: 'Agência de empregos', html: h };
+}
+function motivoExercito() {
+  if (S.idade > 30) return 'Até 30 anos';
+  if (FORM[S.formacao] < FORM.medio) return 'Exige ensino médio';
+  if (S.ficha > 0) return 'Exige ficha limpa';
+  if (S.st.saude < 40) return 'Reprovado no exame de saúde';
+  if (S.emprego) return 'Saia do emprego atual antes';
+  return '';
+}
+function painelMilitar() {
+  let h = '';
+  if (S.emprego && S.emprego.id === 'militar') h += `<div class="cartao"><b>${PATENTES[S.emprego.nivel]}</b><span>Próxima patente: ${PATENTES[S.emprego.nivel + 1] || 'nenhuma, você chegou ao topo'}</span></div>`;
+  else { const m = motivoExercito(); h += row({ ico: '🎖️', titulo: 'Alistar-se no Exército', sub: m || 'Entrar como soldado', attrs: act('alistar'), off: !!m || feito('alistar') }); }
+  h += secao('Patentes') + nota(PATENTES.join(' › '));
+  return { titulo: 'Exército', html: h };
+}
+function painelEmpresa() {
+  let h = '';
+  if (S.negocio) {
+    const n = S.negocio;
+    h += `<div class="cartao"><b>${n.nome}</b><div class="kv"><span>Investido</span><b class="mono">${fmt(n.investido)}</b><span>Valor de mercado</span><b class="mono">${fmt(n.valor)}</b><span>Anos de casa</span><b class="mono">${n.anos}</b></div></div>`;
+    const extra = Math.round(n.investido * .3);
+    const teto = n.investido >= preco(NEGOCIOS.find(x => x.id === n.id).custo) * 3;
+    h += row({ ico: '📈', titulo: 'Investir mais', sub: teto ? 'O negócio já está no tamanho máximo' : 'Aumenta o lucro esperado', tag: fmt(extra), attrs: act('empresa', { op: 'investir' }), off: teto || S.dinheiro < extra || feito('empresa') });
+    h += row({ ico: '🤝', titulo: 'Vender a empresa', tag: fmt(n.valor), attrs: act('empresa', { op: 'vender' }) });
+  } else {
+    h += nota('Escolha um negócio para abrir. O lucro varia todo ano e depende da sua inteligência.');
+    h += NEGOCIOS.map(n => { const c = preco(n.custo); return row({ ico: n.ico, titulo: n.nome, tag: fmt(c), attrs: act('abrirNegocio', { id: n.id }), off: S.dinheiro < c }); }).join('');
   }
-  if (!S.escola && S.idade >= 17) {
-    h += secao('Estudos');
-    if (S.formacao === 'medio' || S.formacao === 'superior') {
-      if (!S.faculdade) h += row({ ico: '🎓', titulo: 'Entrar na faculdade', sub: S.enem ? `Com sua nota do ENEM (${S.enem})` : 'Precisa fazer o ENEM antes', attrs: act('faculdade'), off: !S.enem });
-      h += row({ ico: '📝', titulo: 'Fazer o ENEM', sub: S.enem ? `Nota atual: ${S.enem}` : 'Uma vez por ano', attrs: act('enem'), off: feito('enem') });
-      if (!flag('cursinho')) h += row({ ico: '🏫', titulo: 'Fazer cursinho', sub: 'Aumenta a nota do próximo ENEM', tag: fmt(preco(6000)), attrs: act('cursinho'), off: S.dinheiro < preco(6000) });
-    } else h += row({ ico: '📚', titulo: 'Supletivo (EJA)', sub: 'Concluir o ensino médio em um ano', tag: 'Grátis', attrs: act('supletivo'), off: feito('supletivo') });
-  }
-  if (S.idade >= 12 && !S.bico) h += secao('Renda extra') + row({ ico: '🛵', titulo: 'Bicos', sub: 'Entregas, panfletagem, brigadeiro...', go: 'bicos' });
-  if (S.idade >= 16 && !S.emprego) {
-    h += secao('Carreira');
-    h += row({ ico: '💼', titulo: 'Vagas de emprego', sub: 'CLT, concursos e carreiras especiais', go: 'vagas' });
-  }
-  if (S.idade >= 18) h += row({ ico: '🗳️', titulo: 'Política', sub: S.cargos.length ? `Cargos que já ocupou: ${S.cargos.length}` : 'De vereador a presidente', go: 'politica' });
-  return { titulo, html: h };
+  return { titulo: 'Empresa', html: h };
+}
+// ---------- redes sociais ----------
+const pesos = () => Object.values(S.redes).reduce((t, r) => t + r.peso, 0);
+const segRede = id => (S.redes[id] && pesos() ? Math.round(S.seguidores * S.redes[id].peso / pesos()) : 0);
+function postarEm(id, mult) {
+  const r = S.redes[id];
+  let g = Math.round((10 + S.st.aparencia) * R(1, 12) * (1 + S.seguidores / 20000) * mult);
+  const pl = PLATAFORMAS.find(x => x.id === id);
+  if (chance(.08)) { g *= R(10, 40); line(`Seu post no ${pl.nome} viralizou: mais ${num(g)} seguidores!`, 'good', 'fama'); }
+  else line(`Você ganhou ${num(g)} seguidores no ${pl.nome}.`, '', 'fama');
+  S.seguidores += g; r.peso += g; mod('felicidade', 1);
+  if (!r.verificado && segRede(id) >= 100000) { r.verificado = true; setFlag('verificado'); line(`Sua conta no ${pl.nome} ganhou o selo de verificada!`, 'good', 'fama'); }
+}
+function painelRedes() {
+  let h = nota(`Total: ${num(S.seguidores)} seguidores. A partir de 10 mil, as redes começam a pagar publicidade.`);
+  h += PLATAFORMAS.map(pl => {
+    const r = S.redes[pl.id];
+    if (!r) return row({ ico: pl.ico, titulo: pl.nome, sub: S.idade < 13 ? 'A partir de 13 anos' : `Cadastre-se no ${pl.nome}`, attrs: act('rede', { id: pl.id, op: 'cadastrar' }), off: S.idade < 13 });
+    return row({ ico: pl.ico, titulo: `${pl.nome}${r.verificado ? ' ✔️' : ''}`, sub: `${num(segRede(pl.id))} seguidores`, go: 'rede', arg: pl.id });
+  }).join('');
+  return { titulo: 'Redes sociais', html: h };
+}
+function painelRede(id) {
+  const pl = PLATAFORMAS.find(x => x.id === id), r = S.redes[id];
+  if (!r) return null;
+  let h = `<div class="cartao"><b>${pl.ico} ${pl.nome}${r.verificado ? ' ✔️' : ''}</b><span>${num(segRede(id))} seguidores</span></div>`;
+  h += row({ titulo: pl.acao, sub: 'Seguidores', attrs: act('rede', { id, op: 'postar' }), off: feito('rede:' + id) });
+  if (['tiktok', 'youtube', 'twitch', 'kwai'].includes(id)) h += row({ titulo: 'Fazer uma live', sub: 'Seguidores e doações', attrs: act('rede', { id, op: 'live' }), off: feito('rede:' + id + ':live') || S.idade < 16 });
+  h += row({ titulo: 'Criar polêmica', sub: 'Muitos seguidores ou cancelamento', attrs: act('rede', { id, op: 'polemica' }), off: feito('rede:' + id + ':pol') || S.idade < 16 });
+  h += row({ titulo: 'Excluir conta', sub: 'Você perde os seguidores desta rede', attrs: act('rede', { id, op: 'excluir' }) });
+  return { titulo: pl.nome, html: h };
 }
 function painelVagas() {
   let h = nota('Uma tentativa por vaga a cada ano.');
@@ -473,7 +583,7 @@ const ATIV = [
     { id: 'capilar', nome: 'Implante capilar', desc: 'Aparência', custo: 15000, fx: () => plastica(.85, [5, 10]) }
   ] },
   { id: 'compras', ico: '🛍️', nome: 'Compras', sub: 'Shopping e camelô', min: 10, painel: 'compras' },
-  { id: 'redes', ico: '📱', nome: 'Redes sociais', sub: 'Seguidores e fama', min: 13, itens: [
+  { id: 'redes', ico: '📱', nome: 'Redes sociais', sub: 'Instagram, TikTok, YouTube...', min: 13, painel: 'redes', itens: [
     { id: 'post', nome: 'Postar fotos', desc: 'Seguidores', fx: () => postar(1) },
     { id: 'danca', nome: 'Gravar dancinha', desc: 'Mais seguidores, mais vergonha', fx: () => postar(1.6) },
     { id: 'live', nome: 'Fazer uma live', desc: 'Seguidores e dinheiro', min: 16, fx: () => { postar(1.3); if (S.seguidores > 5000) { const v = Math.round(S.seguidores * .05); grana(v); line(`A live rendeu ${fmt(v)} em doações.`, '', 'fama'); } } },
@@ -498,8 +608,8 @@ const ATIV = [
     { id: 'bateria', nome: 'Bateria de kart', desc: 'Felicidade', custo: 150, fx: () => { if (chance(.1)) { mod('saude', -5); line('Você rodou na curva e bateu no pneu.', 'bad'); } else { mod('felicidade', R(4, 7)); line(`Você chegou em ${R(1, 8)}º lugar no kart.`); } } }
   ] },
   { id: 'detran', ico: '🚗', nome: 'Detran', sub: 'Carteira de motorista', min: 18, itens: [
-    { id: 'cnhcarro', nome: 'Tirar CNH de carro', desc: 'Autoescola e prova', custo: 3500, mostra: () => !S.cnh.carro, fx: () => cnh('carro') },
-    { id: 'cnhmoto', nome: 'Tirar CNH de moto', desc: 'Autoescola e prova', custo: 2000, mostra: () => !S.cnh.moto, fx: () => cnh('moto') }
+    { id: 'cnhcarro', nome: 'Tirar CNH de carro', desc: 'Prova teórica e prática', custo: 3500, acao: 'detran', tipo: 'carro', mostra: () => !S.cnh.carro },
+    { id: 'cnhmoto', nome: 'Tirar CNH de moto', desc: 'Prova teórica e prática', custo: 2000, acao: 'detran', tipo: 'moto', mostra: () => !S.cnh.moto }
   ] },
   { id: 'emprestimo', ico: '🏦', nome: 'Empréstimo', sub: 'Banco ou agiota', min: 18, painel: 'emprestimo' },
   { id: 'processo', ico: '⚖️', nome: 'Processo', sub: 'Processar alguém', min: 18, itens: [
@@ -533,7 +643,8 @@ const ATIV = [
     { id: 'pirata', nome: 'Vender produto pirata', desc: 'Dinheiro médio, risco médio', min: 16, fx: () => { karma(-3); if (chance(.25)) prender(2, 'pirataria'); else { const v = R(2, 8) * 1000; grana(v); line(`Você faturou ${fmt(v)} vendendo produto pirata no camelô.`, '', 'crime'); } } },
     { id: 'golpe', nome: 'Aplicar golpe do Pix', desc: 'Prejudica gente honesta', min: 18, fx: () => { karma(-10); if (chance(.35)) prender(R(2, 5), 'estelionato'); else { const v = R(1, 8) * 1000; grana(v); line(`Você aplicou um golpe e levou ${fmt(v)}. A vítima era uma senhora aposentada.`, 'bad', 'crime'); } } },
     { id: 'banca', nome: 'Montar banca de jogo do bicho', desc: 'Dinheiro alto, risco alto', min: 18, fx: () => { karma(-6); if (chance(.3)) prender(R(2, 4), 'contravenção'); else { const v = R(5, 30) * 1000; grana(v); line(`Sua banca do bicho faturou ${fmt(v)} no ano.`, '', 'crime'); } } },
-    { id: 'hackear', nome: 'Hackear', desc: 'Invadir a conta de alguém', min: 14, mostra: () => S.st.inteligencia >= 60, fx: () => { karma(-6); if (chance(.25)) prender(2, 'crime cibernético'); else { const v = R(1, 20) * 1000; grana(v); line(`Você invadiu uma conta e transferiu ${fmt(v)}.`, '', 'crime'); } } },
+    { id: 'hackear', nome: 'Hackear', desc: 'Minijogo: ligue os pares antes do tempo acabar', min: 14, acao: 'hack' },
+    { id: 'arrombar', nome: 'Arrombar uma casa', desc: 'Minijogo: pegue os objetos e fuja do cachorro', min: 12, acao: 'roubo' },
     { id: 'carro', nome: 'Roubar um carro', desc: 'Dinheiro alto, risco alto', min: 18, fx: () => { karma(-8); if (chance(.35)) prender(R(3, 6), 'roubo de veículo'); else { const v = R(10, 40) * 1000; grana(v); line(`Você roubou um carro e vendeu no desmanche por ${fmt(v)}.`, '', 'crime'); } } },
     { id: 'desvio', nome: 'Desviar dinheiro do trabalho', desc: 'Arriscado e difícil de esconder', min: 18, mostra: () => !!S.emprego, fx: () => { karma(-8); const pol = S.emprego.id === 'pol'; if (chance(.3)) prender(R(3, 8), pol ? 'corrupção' : 'peculato'); else { const v = Math.round(S.emprego.sal * R(10, 40) / 100); grana(v); line(pol ? `Você fez rachadinha no gabinete e embolsou ${fmt(v)}.` : `Você desviou ${fmt(v)} da empresa.`, '', 'crime'); } } },
     { id: 'banco', nome: 'Assaltar um banco', desc: 'Muito dinheiro, risco altíssimo', min: 18, fx: () => { karma(-15); if (chance(.25)) { const v = R(100, 800) * 1000; grana(v); line(`O assalto deu certo. Você levou ${fmt(v)}.`, '', 'crime'); } else prender(R(6, 12), 'assalto a banco'); } }
@@ -565,7 +676,7 @@ function painelCategoria(id) {
     const custo = i.custo ? pago(i.custo) : 0, k = `at:${c.id}:${i.id}`;
     const min = i.min ?? c.min;
     const motivo = S.idade < min ? `A partir de ${min} anos` : feito(k) ? 'Feito este ano' : custo && S.dinheiro < custo ? 'Sem saldo' : '';
-    return row({ titulo: i.nome, sub: i.desc, tag: motivo || (custo ? fmt(custo) : 'Grátis'), attrs: act(i.form ? 'form' : 'item', { cat: c.id, id: i.id }), off: !!motivo });
+    return row({ titulo: i.nome, sub: i.desc, tag: motivo || (custo ? fmt(custo) : 'Grátis'), attrs: act(i.acao || (i.form ? 'form' : 'item'), { cat: c.id, id: i.id }), off: !!motivo });
   }).join('');
   return { titulo: c.nome, html: h || nota('Nada para fazer aqui agora.') };
 }
@@ -755,6 +866,8 @@ const PAINEIS = {
   atividades: painelAtividades, cat: painelCategoria, medico: painelMedico, compras: painelCompras, bichos: painelBichos,
   ferias: painelFerias, emprestimo: painelEmprestimo, testamento: painelTestamento, identidade: painelIdentidade,
   artes: () => painelAulas('arte'), instrumentos: () => painelAulas('inst'),
+  escola: painelEscola, professores: painelProfessores, professor: painelProfessor, trabalho: painelTrabalho, estudos: painelEstudos,
+  recrutador: painelRecrutador, militar: painelMilitar, empresa: painelEmpresa, redes: painelRedes, rede: painelRede,
   bens: painelBens, financas: painelFinancas, investimentos: painelInvestimentos, imoveis: painelImoveis, veiculos: painelVeiculos, pertences: painelPertences,
   menu: painelMenu
 };
@@ -767,6 +880,65 @@ const ACOES = {
     if (custo) grana(-custo);
     S.feitosAno[`at:${c.id}:${i.id}`] = true;
     i.fx();
+  },
+  mudarEscola() {
+    S.feitosAno.mudarEscola = true; CUR_CAT = 'escola';
+    const e = S.escola;
+    if (e.rede === 'pública' && !(paisVivos().length && chance(.4))) { line('Seus pais disseram que não dá para pagar escola particular.', 'bad'); return; }
+    const nova = novaEscola(e.tipo, e.rede === 'particular' ? 'pública' : 'particular');
+    S.escola = Object.assign(nova, { clubes: [] }); popular(-10);
+    line(`Você mudou para a ${nova.nome}, da rede ${nova.rede}.`);
+  },
+  prof(ds) {
+    const p = S.escola.profs.find(x => x.id === ds.id); S.feitosAno[`prof:${p.id}:${ds.acao}`] = true; CUR_CAT = 'escola';
+    const a = p.sexo === 'F' ? 'a professora' : 'o professor';
+    if (ds.acao === 'conversar') { p.rel = clamp(p.rel + R(3, 8)); line(`Você conversou com ${a} ${p.nome.split(' ')[0]} depois da aula.`); }
+    if (ds.acao === 'ajuda') { p.rel = clamp(p.rel + 4); mod('inteligencia', R(2, 4)); line(`${p.nome.split(' ')[0]} tirou suas dúvidas de ${p.materia}.`); }
+    if (ds.acao === 'elogiar') { p.rel = clamp(p.rel + R(5, 10)); karma(1); line(`Você elogiou a aula de ${p.materia}.`); }
+    if (ds.acao === 'maca') { p.rel = clamp(p.rel + 8); popular(-3); line(`Você levou uma maçã para ${a}. A turma te chamou de puxa-saco.`); }
+    if (ds.acao === 'nota') { if (p.rel > 60 && chance(.5)) { mod('inteligencia', 2); line(`${p.nome.split(' ')[0]} revisou a prova e aumentou sua nota.`, 'good'); } else { p.rel = clamp(p.rel - 6); line(`${p.nome.split(' ')[0]} disse que a nota está certa.`); } }
+    if (ds.acao === 'xingar') { p.rel = clamp(p.rel - 25); karma(-3); paisVivos().forEach(r => { r.rel = clamp(r.rel - 6); }); line(`Você xingou ${a} e levou três dias de suspensão.`, 'bad'); }
+  },
+  oferta(ds) {
+    const o = S.feitosAno.ofertas[+ds.i], c = CARREIRAS.find(x => x.id === o.id);
+    o.usada = true; CUR_CAT = 'trabalho';
+    S.emprego = { id: c.id, titulo: tituloCarreira(c), sal: o.sal, anos: 0, desemp: R(45, 65) }; S.ultimoTrabalho = S.emprego.titulo;
+    mod('felicidade', 5);
+    const txt = `Você aceitou a vaga de ${S.emprego.titulo.toLowerCase()} pela agência. Salário: ${fmt(o.sal)} por ano.`;
+    if (!flag('trabalhou')) { setFlag('trabalhou'); marco('Primeiro emprego', txt); } else line(txt, 'good');
+  },
+  alistar() {
+    S.feitosAno.alistar = true; CUR_CAT = 'trabalho';
+    if (chance(.7)) { S.emprego = { id: 'militar', nivel: 0, titulo: 'Soldado do Exército', sal: Math.round(30000 * PAISES[S.pais].sal), anos: 0, desemp: 55 }; S.ultimoTrabalho = S.emprego.titulo; setFlag('reservista'); setFlag('trabalhou'); mod('saude', 4); line('Você entrou para o Exército como soldado.', 'good'); }
+    else line('Você não passou no teste físico do Exército.', 'bad');
+  },
+  abrirNegocio(ds) {
+    const n = NEGOCIOS.find(x => x.id === ds.id), c = preco(n.custo);
+    grana(-c); S.negocio = { id: n.id, nome: n.nome, investido: c, valor: Math.round(c * .8), anos: 0 }; CUR_CAT = 'trabalho'; mod('felicidade', 5);
+    marco('Negócio próprio', `Você abriu: ${n.nome.toLowerCase()}. Agora é ${G('patrão', 'patroa')}!`);
+  },
+  empresa(ds) {
+    const n = S.negocio; CUR_CAT = 'dinheiro';
+    if (ds.op === 'investir') { S.feitosAno.empresa = true; const v = Math.round(n.investido * .3); grana(-v); n.investido += v; n.valor += Math.round(v * .7); line(`Você investiu ${fmt(v)} no negócio.`); }
+    if (ds.op === 'vender') { grana(n.valor); line(`Você vendeu ${n.nome.toLowerCase()} por ${fmt(n.valor)}.`, 'good'); S.negocio = null; }
+  },
+  rede(ds) {
+    const pl = PLATAFORMAS.find(x => x.id === ds.id); CUR_CAT = 'fama';
+    if (ds.op === 'cadastrar') { S.redes[ds.id] = { peso: 1, verificado: false }; line(`Você criou uma conta no ${pl.nome}.`); return; }
+    if (ds.op === 'postar') { S.feitosAno['rede:' + ds.id] = true; postarEm(ds.id, 1); }
+    if (ds.op === 'live') { S.feitosAno['rede:' + ds.id + ':live'] = true; postarEm(ds.id, 1.3); if (S.seguidores > 5000) { const v = Math.round(S.seguidores * .05); grana(v); line(`A live rendeu ${fmt(v)} em doações.`); } }
+    if (ds.op === 'polemica') { S.feitosAno['rede:' + ds.id + ':pol'] = true; if (chance(.5)) { postarEm(ds.id, 3); karma(-3); } else { S.seguidores = Math.round(S.seguidores * .6); mod('felicidade', -8); line(`Você foi ${G('cancelado', 'cancelada')} no ${pl.nome}.`, 'bad'); } }
+    if (ds.op === 'excluir') { S.seguidores = Math.max(0, S.seguidores - segRede(ds.id)); delete S.redes[ds.id]; line(`Você excluiu sua conta no ${pl.nome}.`); voltar(); }
+  },
+  detran(ds) {
+    const i = ATIV.find(x => x.id === ds.cat).itens.find(x => x.id === ds.id);
+    grana(-pago(i.custo)); S.feitosAno[`at:${ds.cat}:${ds.id}`] = true;
+    abrirProva(i.tipo);
+  },
+  hack(ds) { S.feitosAno[`at:${ds.cat}:${ds.id}`] = true; abrirHack(); },
+  roubo(ds) {
+    CARTAO = { cat: 'crime', etiqueta: 'Crime', ico: '🦝', titulo: 'Arrombamento', texto: 'Você está pensando em arrombar uma casa.', fechar: true, alvo: ds,
+      form: [{ id: 'vitima', label: 'Escolha sua vítima', opcoes: VITIMAS.map(v => v.nome) }], botoes: [{ t: 'Arrombar a casa', attrs: 'data-cartao="roubo"' }] };
   },
   form(ds) {
     const c = ATIV.find(x => x.id === ds.cat), i = c.itens.find(x => x.id === ds.id);
@@ -801,6 +973,7 @@ const ACOES = {
   escola(ds) {
     S.feitosAno['es:' + ds.id] = true; CUR_CAT = 'escola';
     if (ds.id === 'estudar') { mod('inteligencia', R(2, 6)); mod('felicidade', -1); line('Você se dedicou aos estudos.'); }
+    if (ds.id === 'enfermaria') { if (S.doencas.length || S.st.saude < 60) { mod('saude', R(2, 4)); line('A enfermeira te deu um remédio e um copo de água com açúcar.'); } else if (chance(.5)) { mod('felicidade', 3); line('Você fingiu dor de barriga e foi liberad' + G('o', 'a') + ' mais cedo.'); } else { line('A enfermeira percebeu que você estava fingindo e te mandou de volta para a sala.'); } }
     if (ds.id === 'professor') { mod('inteligencia', R(1, 3)); karma(1); line('Você tirou dúvidas com a professora depois da aula.'); }
     if (ds.id === 'amizade') { popular(R(3, 8)); if (chance(.5)) { const p = pessoa('amigo', pick(['M', 'F']), Math.max(6, S.idade + R(-1, 1))); S.rel.push(p); line(`Você fez amizade com ${p.nome}.`, 'good', 'familia'); } else line('Você se enturmou com a galera do fundão.'); }
     if (ds.id === 'matar') { mod('felicidade', 4); mod('inteligencia', -2); if (chance(.35)) { paisVivos().forEach(r => { r.rel = clamp(r.rel - 8); }); line('A escola ligou para os seus pais: você matou aula.', 'bad'); } else line('Você matou aula e foi para a praça com a turma.'); }
@@ -936,7 +1109,10 @@ function acaoValida(a, ds) {
   if (a === 'trab') return !!S.emprego;
   if (a === 'trancar') return !!S.faculdade;
   if (a === 'largarBico') return !!S.bico;
-  if (a === 'clube') return !!S.escola;
+  if (a === 'clube' || a === 'mudarEscola' || a === 'prof') return !!S.escola;
+  if (a === 'empresa') return !!S.negocio;
+  if (a === 'oferta') return !S.emprego && !!S.feitosAno.ofertas;
+  if (a === 'rede' && ds.op !== 'cadastrar') return !!S.redes[ds.id];
   if (a === 'rel') return S.rel.some(x => x.id === ds.id && x.vivo);
   if (a === 'vender') return S.bens.some(x => x.id === ds.id);
   if (a === 'venderItem') return S.pertences.some(x => x.id === ds.id);
@@ -947,7 +1123,7 @@ document.addEventListener('click', ev => {
   const b = ev.target.closest('button');
   if (!b || b.disabled || !S) return;
   if (b.dataset.escolha !== undefined) { escolher(+b.dataset.escolha); return; }
-  if (b.dataset.cartao) { cliqueCartao(b.dataset.cartao); return; }
+  if (b.dataset.cartao) { cliqueCartao(b.dataset.cartao, b.dataset); return; }
   if (b.dataset.go) { abrirPainel(b.dataset.go, b.dataset.arg, b.closest('#painel') === null); return; }
   const a = b.dataset.act;
   if (!a || !ACOES[a]) return;
@@ -962,10 +1138,12 @@ document.addEventListener('click', ev => {
   morteImediata();
   salvar(); render();
 });
-const COM_RESULTADO = ['item', 'crianca', 'escola', 'rel', 'medico', 'tratar', 'passeio', 'viagem', 'aula', 'pet', 'remicao', 'patio', 'trab', 'vaga', 'concorrer', 'enem', 'supletivo'];
-function cliqueCartao(tipo) {
+const COM_RESULTADO = ['item', 'crianca', 'escola', 'rel', 'medico', 'tratar', 'passeio', 'viagem', 'aula', 'pet', 'remicao', 'patio', 'trab', 'vaga', 'concorrer', 'enem', 'supletivo', 'mudarEscola', 'prof', 'oferta', 'alistar', 'rede'];
+function cliqueCartao(tipo, ds = {}) {
   const c = CARTAO;
   CARTAO = null;
+  if (tipo === 'resp') { responderProva(+ds.r); return; }
+  if (tipo === 'roubo' && c && c.alvo) { S.feitosAno[`at:${c.alvo.cat}:${c.alvo.id}`] = true; salvar(); render(); abrirRoubo(+($('f_vitima').value || 0)); return; }
   if (tipo === 'fazer' && c && c.alvo) {
     const cat = ATIV.find(x => x.id === c.alvo.cat), i = cat.itens.find(x => x.id === c.alvo.id);
     const vals = i.form.map(f => +($('f_' + f.id).value || 0));
@@ -982,77 +1160,298 @@ $('avatar').addEventListener('click', abrirPerfil);
 $('age').addEventListener('click', () => { avancar(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 $('painelVoltar').addEventListener('click', voltar);
 document.addEventListener('keydown', e => {
-  if (!$('fuga').hidden) { const d = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key]; if (d) { e.preventDefault(); moverFuga(d); } return; }
+  if (JOGO) { const d = DIRS[e.key]; if (d) { e.preventDefault(); if (JOGO === 'fuga') moverFuga(d); if (JOGO === 'roubo') dirRoubo(d); } return; }
   if (e.key === 'Escape' && CARTAO && !S.fila.length) { CARTAO = null; renderModal(); return; }
   if (e.key === 'Escape' && !$('painel').hidden && $('modal').hidden) voltar();
 });
 
-// ================= minijogo: fuga da prisão =================
-let FUGA = null;
-const N_FUGA = 11;
-function abrirFuga() {
-  const g = Array.from({ length: N_FUGA }, () => Array(N_FUGA).fill(1));
-  const pilhaM = [[1, 1]]; g[1][1] = 0;
-  while (pilhaM.length) {
-    const [x, y] = pilhaM[pilhaM.length - 1];
-    const viz = [[2, 0], [-2, 0], [0, 2], [0, -2]].map(([dx, dy]) => [x + dx, y + dy, x + dx / 2, y + dy / 2]).filter(([nx, ny]) => nx > 0 && ny > 0 && nx < N_FUGA - 1 && ny < N_FUGA - 1 && g[ny][nx]);
-    if (!viz.length) { pilhaM.pop(); continue; }
-    const [nx, ny, mx, my] = pick(viz); g[ny][nx] = 0; g[my][mx] = 0; pilhaM.push([nx, ny]);
+// ================= minijogos =================
+// Todos usam a mesma janela (#jogo). JOGO diz qual está aberto: 'fuga', 'roubo' ou 'hack'.
+let JOGO = null;
+const DIRS = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] };
+function labirinto(n, extras) {
+  const g = Array.from({ length: n }, () => Array(n).fill(1));
+  const p = [[1, 1]]; g[1][1] = 0;
+  while (p.length) {
+    const [x, y] = p[p.length - 1];
+    const viz = [[2, 0], [-2, 0], [0, 2], [0, -2]].map(([dx, dy]) => [x + dx, y + dy, x + dx / 2, y + dy / 2]).filter(([nx, ny]) => nx > 0 && ny > 0 && nx < n - 1 && ny < n - 1 && g[ny][nx]);
+    if (!viz.length) { p.pop(); continue; }
+    const [nx, ny, mx, my] = pick(viz); g[ny][nx] = 0; g[my][mx] = 0; p.push([nx, ny]);
   }
-  for (let k = 0; k < 12; k++) { const x = R(1, N_FUGA - 2), y = R(1, N_FUGA - 2); if ((x + y) % 2) g[y][x] = 0; }
-  FUGA = { g, eu: [1, N_FUGA - 2], guarda: [N_FUGA - 2, N_FUGA - 2], saida: [N_FUGA - 2, 1], passos: 0, fim: false };
-  $('fuga').hidden = false;
-  desenharFuga('Chegue à porta (verde) sem encostar no guarda (vermelho). Ele anda a cada dois passos seus.');
+  for (let k = 0; k < extras; k++) { const x = R(1, n - 2), y = R(1, n - 2); if ((x + y) % 2) g[y][x] = 0; }
+  return g;
+}
+// Próximo passo de quem persegue (guarda, cachorro) pelo menor caminho
+function perseguir(g, de, alvo) {
+  const vis = new Map([[de.join(','), null]]), fila = [de];
+  while (fila.length) {
+    const a = fila.shift();
+    if (a[0] === alvo[0] && a[1] === alvo[1]) break;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const n = [a[0] + dx, a[1] + dy], k = n.join(',');
+      if (g[n[1]] && g[n[1]][n[0]] === 0 && !vis.has(k)) { vis.set(k, a); fila.push(n); }
+    }
+  }
+  let p = alvo, ant = vis.get(alvo.join(','));
+  if (ant === undefined) return de;
+  while (ant && !(ant[0] === de[0] && ant[1] === de[1])) { p = ant; ant = vis.get(ant.join(',')); }
+  return p;
+}
+function abrirJogo(tipo, titulo, texto, n, ctrl) {
+  JOGO = tipo;
+  $('jogoTitulo').textContent = titulo;
+  $('jogoTexto').textContent = texto;
+  $('jogoGrade').style.gridTemplateColumns = `repeat(${n}, 1fr)`;
+  $('jogoGrade').className = 'grade ' + tipo;
+  $('jogoCtrl').hidden = !ctrl;
+  $('jogo').hidden = false;
+}
+function fecharJogo() { $('jogo').hidden = true; JOGO = null; salvar(); render(); }
+const mesma = (a, b) => a[0] === b[0] && a[1] === b[1];
+
+// ---------- fuga da prisão (por turnos) ----------
+let FUGA = null;
+function abrirFuga() {
+  const n = 11;
+  FUGA = { g: labirinto(n, 12), eu: [1, n - 2], guarda: [n - 2, n - 2], saida: [n - 2, 1], passos: 0, fim: false };
+  abrirJogo('fuga', 'Fuga da prisão', 'Chegue à porta (verde) sem encostar no guarda. Ele anda a cada dois passos seus.', n, true);
+  desenharFuga('Use as setas.');
 }
 function desenharFuga(msg) {
   const { g, eu, guarda, saida } = FUGA;
   let h = '';
-  for (let y = 0; y < N_FUGA; y++) for (let x = 0; x < N_FUGA; x++) {
-    const cls = x === eu[0] && y === eu[1] ? 'eu' : x === guarda[0] && y === guarda[1] ? 'guarda' : x === saida[0] && y === saida[1] ? 'saida' : g[y][x] ? 'parede' : 'chao';
-    h += `<span class="c ${cls}"></span>`;
+  for (let y = 0; y < g.length; y++) for (let x = 0; x < g.length; x++) {
+    const p = [x, y];
+    h += mesma(p, eu) ? `<span class="c chao">${avatar({ sexo: S.sexo, idade: S.idade, pele: S.pele, cabelo: S.cabelo })}</span>` : mesma(p, guarda) ? '<span class="c chao">👮</span>' : mesma(p, saida) ? '<span class="c saida">🚪</span>' : `<span class="c ${g[y][x] ? 'parede' : 'chao'}"></span>`;
   }
-  $('fugaGrade').innerHTML = h;
-  $('fugaMsg').textContent = msg;
-}
-function passoGuarda() {
-  const { g, eu, guarda } = FUGA;
-  const vis = new Map([[guarda.join(','), null]]); const fila = [guarda];
-  while (fila.length) {
-    const atual = fila.shift();
-    if (atual[0] === eu[0] && atual[1] === eu[1]) break;
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-      const n = [atual[0] + dx, atual[1] + dy], k = n.join(',');
-      if (!g[n[1]][n[0]] && !vis.has(k)) { vis.set(k, atual); fila.push(n); }
-    }
-  }
-  let p = eu, ant = vis.get(eu.join(','));
-  if (ant === undefined) return;
-  while (ant && !(ant[0] === guarda[0] && ant[1] === guarda[1])) { p = ant; ant = vis.get(ant.join(',')); }
-  FUGA.guarda = p;
+  $('jogoGrade').innerHTML = h;
+  $('jogoMsg').textContent = msg;
 }
 function moverFuga([dx, dy]) {
   if (!FUGA || FUGA.fim) return;
   const n = [FUGA.eu[0] + dx, FUGA.eu[1] + dy];
   if (FUGA.g[n[1]][n[0]]) return;
   FUGA.eu = n; FUGA.passos++;
-  const pego = () => FUGA.eu[0] === FUGA.guarda[0] && FUGA.eu[1] === FUGA.guarda[1];
-  if (n[0] === FUGA.saida[0] && n[1] === FUGA.saida[1]) return terminarFuga(true);
-  if (pego()) return terminarFuga(false);
-  if (FUGA.passos % 2 === 0) passoGuarda();
-  if (pego()) return terminarFuga(false);
+  if (mesma(n, FUGA.saida)) return terminarFuga(true);
+  if (mesma(n, FUGA.guarda)) return terminarFuga(false);
+  if (FUGA.passos % 2 === 0) FUGA.guarda = perseguir(FUGA.g, FUGA.guarda, FUGA.eu);
+  if (mesma(FUGA.eu, FUGA.guarda)) return terminarFuga(false);
   desenharFuga(`Passos: ${FUGA.passos}`);
 }
 function terminarFuga(ok) {
   FUGA.fim = true;
   deltas = {};
-  CUR_CAT = 'crime';
-  if (ok) { S.preso = 0; setFlag('fugitivo'); karma(-5); marco('Fuga!', `Você escapou da prisão. Agora é ${G('um fugitivo', 'uma fugitiva')}.`); }
-  else { S.preso += 2; mod('felicidade', -8); line('O guarda te pegou na fuga. Mais dois anos de pena.', 'bad'); }
-  CUR_CAT = null;
+  comResultado(() => {
+    CUR_CAT = 'crime';
+    if (ok) { S.preso = 0; setFlag('fugitivo'); karma(-5); marco('Fuga!', `Você escapou da prisão. Agora é ${G('um fugitivo', 'uma fugitiva')}.`); }
+    else { S.preso += 2; mod('felicidade', -8); line('O guarda te pegou na fuga. Mais dois anos de pena.', 'bad'); }
+    CUR_CAT = null;
+  }, ok ? 'Fuga!' : 'Pego!', ok ? '🏃' : '👮');
   desenharFuga(ok ? 'Você conseguiu!' : 'O guarda te pegou.');
-  setTimeout(() => { $('fuga').hidden = true; salvar(); render(); }, 900);
+  setTimeout(fecharJogo, 900);
 }
-$('fugaCtrl').addEventListener('click', e => { const b = e.target.closest('button'); if (b && b.dataset.d) moverFuga(b.dataset.d.split(',').map(Number)); });
+
+// ---------- arrombamento (em tempo real) ----------
+let ROUBO = null, ROUBO_T = null;
+function abrirRoubo(vi) {
+  const v = VITIMAS[vi] || VITIMAS[0], n = 11, g = labirinto(n, 16);
+  g[0][1] = 0;
+  const livres = [];
+  for (let y = 1; y < n - 1; y++) for (let x = 1; x < n - 1; x++) if (!g[y][x]) livres.push([x, y]);
+  livres.sort(() => Math.random() - .5);
+  const eu = livres.find(p => p[0] > 3 && p[1] > 3) || livres[0];
+  const caes = [[n - 2, n - 2], [n - 2, 1], [1, n - 2]].slice(0, v.caes).filter(c => !g[c[1]][c[0]]);
+  const itens = livres.filter(p => !mesma(p, eu) && !caes.some(c => mesma(c, p))).slice(0, v.itens).map(p => ({ p, o: pick(OBJETOS) }));
+  ROUBO = { g, eu, dir: [0, 0], caes, itens, pegos: [], saida: [1, 0], v, fim: false, t: 0 };
+  abrirJogo('roubo', `Casa de ${v.nome.toLowerCase().replace(/^(um|uma) /, '')}`, 'Pegue o máximo de objetos e saia pela porta (🚪 no canto) sem o cachorro te pegar. Deslize o dedo ou use as setas para mudar de direção.', n, true);
+  desenharRoubo('Escolha uma direção para começar.');
+  clearInterval(ROUBO_T);
+  ROUBO_T = setInterval(tickRoubo, 260);
+}
+function desenharRoubo(msg) {
+  const { g, eu, caes, itens, saida } = ROUBO;
+  let h = '';
+  for (let y = 0; y < g.length; y++) for (let x = 0; x < g.length; x++) {
+    const p = [x, y], it = itens.find(i => mesma(i.p, p));
+    h += mesma(p, eu) ? `<span class="c chao">${avatar({ sexo: S.sexo, idade: S.idade, pele: S.pele, cabelo: S.cabelo })}</span>`
+      : caes.some(c => mesma(c, p)) ? '<span class="c cao">🐕</span>'
+      : mesma(p, saida) ? '<span class="c saida">🚪</span>'
+      : it ? `<span class="c chao">${it.o[0]}</span>` : `<span class="c ${g[y][x] ? 'parede' : 'chao'}"></span>`;
+  }
+  $('jogoGrade').innerHTML = h;
+  $('jogoMsg').textContent = msg || `Objetos: ${ROUBO.pegos.length} de ${ROUBO.pegos.length + ROUBO.itens.length}`;
+}
+function dirRoubo(d) { if (ROUBO && !ROUBO.fim) ROUBO.dir = d; }
+function tickRoubo() {
+  const r = ROUBO;
+  if (!r || r.fim) return;
+  const [dx, dy] = r.dir;
+  if (dx || dy) {
+    const n = [r.eu[0] + dx, r.eu[1] + dy];
+    if (r.g[n[1]] && r.g[n[1]][n[0]] === 0) r.eu = n;
+    const k = r.itens.findIndex(i => mesma(i.p, r.eu));
+    if (k >= 0) r.pegos.push(r.itens.splice(k, 1)[0].o);
+    if (mesma(r.eu, r.saida)) return terminarRoubo(true);
+    r.t++;
+    if (r.t % 2 === 0) r.caes = r.caes.map(c => perseguir(r.g, c, r.eu));
+  }
+  if (r.caes.some(c => mesma(c, r.eu))) return terminarRoubo(false);
+  desenharRoubo();
+}
+function terminarRoubo(ok) {
+  const r = ROUBO; r.fim = true; clearInterval(ROUBO_T);
+  deltas = {};
+  comResultado(() => {
+    CUR_CAT = 'crime'; karma(-8);
+    if (ok) {
+      const v = r.pegos.reduce((t, o) => t + o[2], 0) * r.v.mult;
+      if (v) { grana(v); line(`Você arrombou a casa de ${r.v.nome.toLowerCase().replace(/^(um|uma) /, '')} e levou ${r.pegos.map(o => o[1]).join(', ')}. Vendeu tudo por ${fmt(v)}.`); }
+      else line('Você entrou na casa, ficou com medo e saiu de mãos vazias.');
+    } else {
+      mod('saude', -R(3, 8));
+      line('O cachorro te pegou pela calça e a polícia chegou.', 'bad');
+      if (S.idade >= 12) prender(R(1, 3), 'invasão de domicílio');
+    }
+    CUR_CAT = null;
+  }, ok ? 'Arrombamento' : 'Pego no flagra', '🦝');
+  desenharRoubo(ok ? 'Você escapou!' : 'O cachorro te pegou!');
+  setTimeout(fecharJogo, 900);
+}
+
+// ---------- hacker: ligar os pares ----------
+let HACK = null, HACK_T = null;
+const CORES_HACK = ['#E5484D', '#3E7BFA', '#30A46C', '#F5B014'];
+function gerarHack(n, k) {
+  for (let t = 0; t < 300; t++) {
+    const g = Array.from({ length: n }, () => Array(n).fill(-1)), sol = [];
+    let ok = true;
+    for (let c = 0; c < k && ok; c++) {
+      const livres = []; for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (g[y][x] < 0) livres.push([x, y]);
+      let p = pick(livres), cam = [p]; g[p[1]][p[0]] = c;
+      for (let passo = 0; passo < R(3, 7); passo++) {
+        const viz = [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => [p[0] + dx, p[1] + dy]).filter(([x, y]) => x >= 0 && y >= 0 && x < n && y < n && g[y][x] < 0);
+        if (!viz.length) break;
+        p = pick(viz); g[p[1]][p[0]] = c; cam.push(p);
+      }
+      if (cam.length < 3) ok = false; else sol.push(cam);
+    }
+    if (ok) return sol;
+  }
+  return null;
+}
+function abrirHack() {
+  const n = 5, sol = gerarHack(n, 4);
+  const pontas = {};
+  sol.forEach((cam, c) => { pontas[cam[0].join(',')] = c; pontas[cam[cam.length - 1].join(',')] = c; });
+  HACK = { n, sol, pontas, cams: {}, ativo: null, arrastando: false, tempo: 20 + Math.round(S.st.inteligencia / 10), fim: false };
+  abrirJogo('hack', 'Hackear', 'Você encontrou um firewall! Ligue cada número ao seu par, arrastando o dedo, antes que o sistema te expulse.', n, false);
+  desenharHack();
+  clearInterval(HACK_T);
+  HACK_T = setInterval(() => { if (!HACK || HACK.fim) return; HACK.tempo--; if (HACK.tempo <= 0) terminarHack(false); else desenharHack(); }, 1000);
+}
+function donoCelula(k) { for (const c in HACK.cams) if (HACK.cams[c].some(p => p.join(',') === k)) return +c; return -1; }
+function desenharHack() {
+  const { n, pontas } = HACK;
+  let h = '';
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
+    const k = `${x},${y}`, d = donoCelula(k), pt = pontas[k];
+    const fundo = d >= 0 ? `style="background:${CORES_HACK[d]}55"` : '';
+    h += `<span class="c hk" data-x="${x}" data-y="${y}" ${fundo}>${pt !== undefined ? `<i style="background:${CORES_HACK[pt]}">${pt + 1}</i>` : ''}</span>`;
+  }
+  $('jogoGrade').innerHTML = h;
+  $('jogoMsg').textContent = HACK.fim ? '' : `Tempo restante: ${HACK.tempo} segundos`;
+}
+function completo(c) { const cam = HACK.cams[c]; if (!cam || cam.length < 2) return false; const a = cam[0].join(','), b = cam[cam.length - 1].join(','); return a !== b && HACK.pontas[a] === c && HACK.pontas[b] === c; }
+function tocarHack(x, y, inicio) {
+  if (!HACK || HACK.fim) return;
+  const k = `${x},${y}`, pt = HACK.pontas[k];
+  if (inicio && pt !== undefined) { HACK.ativo = pt; HACK.cams[pt] = [[x, y]]; desenharHack(); return; }
+  const c = HACK.ativo;
+  if (c === null) return;
+  const cam = HACK.cams[c], ult = cam[cam.length - 1];
+  if (Math.abs(ult[0] - x) + Math.abs(ult[1] - y) !== 1) return;
+  const ja = cam.findIndex(p => p[0] === x && p[1] === y);
+  if (ja >= 0) { cam.length = ja + 1; desenharHack(); return; }
+  if (completo(c)) return;
+  if (pt !== undefined && pt !== c) return;
+  const outro = donoCelula(k);
+  if (outro >= 0 && outro !== c) { const oc = HACK.cams[outro], i = oc.findIndex(p => p.join(',') === k); oc.length = i; }
+  cam.push([x, y]);
+  if ([0, 1, 2, 3].every(completo)) return terminarHack(true);
+  desenharHack();
+}
+function terminarHack(ok) {
+  HACK.fim = true; clearInterval(HACK_T);
+  deltas = {};
+  comResultado(() => {
+    CUR_CAT = 'crime'; karma(-6);
+    if (ok) { const v = R(2, 20) * 1000 + S.st.inteligencia * 50; grana(v); line(`Você passou pelo firewall e transferiu ${fmt(v)} de uma conta.`); }
+    else if (chance(.4)) prender(2, 'crime cibernético');
+    else line('O sistema te expulsou antes de você terminar.', 'bad');
+    CUR_CAT = null;
+  }, ok ? 'Acesso liberado' : 'Acesso negado', '💻');
+  desenharHack();
+  $('jogoMsg').textContent = ok ? 'Acesso liberado!' : 'Tempo esgotado.';
+  setTimeout(fecharJogo, 900);
+}
+function celulaEm(e) { const el = document.elementFromPoint(e.clientX, e.clientY); return el && el.closest ? el.closest('.hk') : null; }
+let toque0 = null;
+$('jogoGrade').addEventListener('pointerdown', e => {
+  if (JOGO === 'hack') { const c = celulaEm(e); if (c) { HACK.arrastando = true; tocarHack(+c.dataset.x, +c.dataset.y, true); } e.preventDefault(); }
+  else toque0 = [e.clientX, e.clientY];
+});
+$('jogoGrade').addEventListener('pointermove', e => { if (JOGO === 'hack' && HACK && HACK.arrastando) { const c = celulaEm(e); if (c) tocarHack(+c.dataset.x, +c.dataset.y, false); } });
+document.addEventListener('pointerup', e => {
+  if (HACK) HACK.arrastando = false;
+  if (toque0 && (JOGO === 'roubo' || JOGO === 'fuga')) {
+    const dx = e.clientX - toque0[0], dy = e.clientY - toque0[1];
+    if (Math.max(Math.abs(dx), Math.abs(dy)) > 20) { const d = Math.abs(dx) > Math.abs(dy) ? [Math.sign(dx), 0] : [0, Math.sign(dy)]; JOGO === 'roubo' ? dirRoubo(d) : moverFuga(d); }
+  }
+  toque0 = null;
+});
+$('jogoCtrl').addEventListener('click', e => { const b = e.target.closest('button'); if (!b || !b.dataset.d) return; const d = b.dataset.d.split(',').map(Number); JOGO === 'roubo' ? dirRoubo(d) : moverFuga(d); });
+
+// ---------- prova do Detran ----------
+let PROVA = null;
+function placaSVG(id) {
+  const losango = (dentro) => `<svg viewBox="0 0 100 100" class="placa"><rect x="18" y="18" width="64" height="64" rx="5" transform="rotate(45 50 50)" fill="#F5C400" stroke="#111" stroke-width="4"/>${dentro}</svg>`;
+  const circulo = (dentro, barra) => `<svg viewBox="0 0 100 100" class="placa"><circle cx="50" cy="50" r="42" fill="#fff" stroke="#D11" stroke-width="10"/>${dentro}${barra ? '<line x1="22" y1="22" x2="78" y2="78" stroke="#D11" stroke-width="9"/>' : ''}</svg>`;
+  return {
+    pare: '<svg viewBox="0 0 100 100" class="placa"><polygon points="30,5 70,5 95,30 95,70 70,95 30,95 5,70 5,30" fill="#D11" stroke="#fff" stroke-width="4"/><text x="50" y="60" text-anchor="middle" font-size="26" font-weight="800" fill="#fff" font-family="sans-serif">PARE</text></svg>',
+    preferencia: '<svg viewBox="0 0 100 100" class="placa"><polygon points="8,12 92,12 50,90" fill="#fff" stroke="#D11" stroke-width="10" stroke-linejoin="round"/></svg>',
+    vel60: circulo('<text x="50" y="62" text-anchor="middle" font-size="34" font-weight="800" fill="#111" font-family="sans-serif">60</text><text x="50" y="76" text-anchor="middle" font-size="10" fill="#111" font-family="sans-serif">km/h</text>'),
+    estacionar: circulo('<text x="50" y="64" text-anchor="middle" font-size="40" font-weight="800" fill="#111" font-family="sans-serif">E</text>', true),
+    lombada: losango('<path d="M28 62 Q50 36 72 62 Z" fill="#111"/><rect x="24" y="62" width="52" height="5" fill="#111"/>'),
+    curva: losango('<path d="M42 72 V52 Q42 38 56 38 H60" stroke="#111" stroke-width="7" fill="none"/><polygon points="58,28 72,38 58,48" fill="#111"/>'),
+    esquerda: circulo('<path d="M60 72 V50 Q60 40 50 40 H40" stroke="#111" stroke-width="7" fill="none"/><polygon points="42,30 28,40 42,50" fill="#111"/>', true),
+    pedestre: losango('<text x="50" y="64" text-anchor="middle" font-size="34">🚶</text>')
+  }[id];
+}
+function abrirProva(tipo) {
+  PROVA = { tipo, qs: PLACAS.slice().sort(() => Math.random() - .5).slice(0, 3), i: 0, acertos: 0 };
+  perguntaProva();
+  renderModal();
+}
+function perguntaProva() {
+  const q = PROVA.qs[PROVA.i];
+  const opts = [q.certo, ...q.erradas].sort(() => Math.random() - .5);
+  CARTAO = { cat: 'vida', etiqueta: 'Detran', ico: '🚗', titulo: `Prova teórica · ${PROVA.i + 1} de 3`, texto: 'O que significa esta placa?', html: placaSVG(q.id),
+    botoes: opts.map(o => ({ t: o, attrs: `data-cartao="resp" data-r="${o === q.certo ? 1 : 0}"` })) };
+}
+function responderProva(certo) {
+  PROVA.acertos += certo; PROVA.i++;
+  if (PROVA.i < PROVA.qs.length) { perguntaProva(); renderModal(); return; }
+  const p = PROVA; PROVA = null;
+  deltas = {};
+  comResultado(() => {
+    CUR_CAT = 'vida';
+    if (p.acertos < 2) { mod('felicidade', -3); line(`Você acertou ${p.acertos} de 3 na prova teórica do Detran e reprovou.`, 'bad'); }
+    else if (chance(.55 + S.st.inteligencia / 300)) { S.cnh[p.tipo] = true; mod('felicidade', 6); line(`Você acertou ${p.acertos} de 3 na teórica, passou na prática e tirou a CNH de ${p.tipo}!`, 'good'); }
+    else { mod('felicidade', -3); line(`Você passou na teórica, mas reprovou na prática. ${p.tipo === 'carro' ? 'A baliza não perdoa.' : 'Foi o oito.'}`, 'bad'); }
+    CUR_CAT = null;
+  }, 'Prova do Detran', '🚗');
+  salvar(); render();
+}
 
 // ================= som, confete e aviso =================
 let somLigado = lerLS(SOM_KEY, true);

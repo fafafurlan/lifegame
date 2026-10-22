@@ -10,14 +10,14 @@ const els = {};
 let clique = null;
 const ctx = {
   console, Math, JSON, Intl, Object, Array, String, Number, Date, Map, Set,
-  setTimeout: f => { f(); return 0; }, clearTimeout() {}, performance: { now: () => 0 }, requestAnimationFrame() {}, innerWidth: 400, innerHeight: 800,
+  setTimeout: f => { f(); return 0; }, clearTimeout() {}, setInterval: () => 1, clearInterval() {}, performance: { now: () => 0 }, requestAnimationFrame() {}, innerWidth: 400, innerHeight: 800,
   getComputedStyle: () => ({ getPropertyValue: () => '#fff' }),
   document: { getElementById: id => (els[id] = els[id] || el()), addEventListener: (t, f) => { if (t === 'click') clique = f; }, documentElement: {} },
   localStorage: { getItem() { return null; }, setItem() {} }
 };
 ctx.window = ctx; ctx.window.scrollTo = () => {};
 vm.createContext(ctx);
-vm.runInContext(codigo + '\n;globalThis.__api = { get S(){return S;}, set S(v){S=v;}, avancar, escolher, novaVida, novaVidaLegado, PAINEIS, EVENTOS_TODOS, render, get FUGA(){return FUGA;}, moverFuga, get CARTAO(){return CARTAO;}, cliqueCartao, surpresa, abrirPerfil, get CONQ(){return CONQ;} };', ctx);
+vm.runInContext(codigo + '\n;globalThis.__api = { get S(){return S;}, set S(v){S=v;}, avancar, escolher, novaVida, novaVidaLegado, PAINEIS, EVENTOS_TODOS, render, get FUGA(){return FUGA;}, moverFuga, get CARTAO(){return CARTAO;}, cliqueCartao, surpresa, abrirPerfil, get ROUBO(){return ROUBO;}, tickRoubo, dirRoubo, get HACK(){return HACK;}, terminarHack, tocarHack, get CONQ(){return CONQ;} };', ctx);
 const A = ctx.__api;
 const pick = a => a[Math.floor(Math.random() * a.length)];
 
@@ -31,10 +31,29 @@ function botoes(html) {
   return out;
 }
 function clicar(ds, noPainel) { clique({ target: { disabled: false, dataset: ds, closest(sel) { return sel === '#painel' ? (noPainel ? {} : null) : this; } } }); }
+const jogos = { roubo: 0, hack: 0, hackOk: 0 };
+function rodarJogos() {
+  if (A.ROUBO && !A.ROUBO.fim) {
+    jogos.roubo++;
+    for (let t = 0; t < 600 && !A.ROUBO.fim; t++) { if (t === 0 || Math.random() < .25) A.dirRoubo(pick([[0, 1], [0, -1], [1, 0], [-1, 0]])); A.tickRoubo(); }
+    if (!A.ROUBO.fim) { A.dirRoubo([0, -1]); for (let t = 0; t < 50 && !A.ROUBO.fim; t++) A.tickRoubo(); }
+  }
+  if (A.HACK && !A.HACK.fim) {
+    jogos.hack++;
+    if (Math.random() < .5) { A.HACK.sol.forEach(cam => { A.tocarHack(cam[0][0], cam[0][1], true); cam.slice(1).forEach(p => A.tocarHack(p[0], p[1], false)); }); if (A.HACK.fim) jogos.hackOk++; }
+    if (!A.HACK.fim) A.terminarHack(false);
+  }
+}
 function resolverFila() {
   let g = 0;
   while ((A.render(), A.S.fila.length || A.CARTAO) && g++ < 50) {
-    if (!A.S.fila.length) { A.cliqueCartao(A.CARTAO.form ? 'fazer' : 'ok'); continue; }
+    rodarJogos();
+    if (!A.S.fila.length && A.CARTAO) {
+      const bs = A.CARTAO.botoes.map(b => { const ds = {}; (b.attrs.match(/data-([\w-]+)="([^"]*)"/g) || []).forEach(p => { const [, k, v] = p.match(/data-([\w-]+)="([^"]*)"/); ds[k] = v; }); return ds; });
+      const ds = bs.length ? pick(bs) : { cartao: 'ok' };
+      A.cliqueCartao(ds.cartao, ds); rodarJogos(); continue;
+    }
+    if (!A.S.fila.length) continue;
     const it = A.S.fila[0];
     if (Math.random() < .15 && it.id !== '__marco' && it.id !== '__info') { A.surpresa(); continue; }
     const e = A.EVENTOS_TODOS.find(x => x.id === it.id);
@@ -87,4 +106,5 @@ for (let v = 0; v < N; v++) {
 const id = stats.idades.sort((a, b) => a - b);
 console.log('vidas', stats.vidas, '| erros', stats.erros, '| idade mediana', id[id.length >> 1], 'min', id[0], 'max', id[id.length - 1], '| geração máx', stats.maxGer);
 console.log('fitas', JSON.stringify(stats.fitas));
+console.log('minijogos', JSON.stringify(jogos));
 console.log('painéis visitados', stats.paineis.size, '| ações diferentes', Object.keys(stats.acoes).length, '| conquistas', A.CONQ.length);

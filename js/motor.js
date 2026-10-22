@@ -73,7 +73,7 @@ function rotulo(r) {
 }
 const quem = r => `${r.nome} (${rotulo(r).toLowerCase()})`;
 // Popup informativo (doença, escola nova...): só tem o botão OK
-function aviso(cat, ico, titulo, texto, info) { S.fila.push({ id: '__info', d: { cat, ico, titulo, texto, info } }); }
+function aviso(cat, ico, titulo, texto, info, pessoa) { S.fila.push({ id: '__info', d: { cat, ico, titulo, texto, info, pessoa } }); }
 function marco(titulo, texto) { S.fila.push({ id: '__marco', d: { titulo, texto } }); line(texto, 'good'); }
 function sexoParceiro() { return S.interesse === 'A' ? pick(['M', 'F']) : S.interesse; }
 function novoParceiro(nome, sexo, sufixo) {
@@ -130,7 +130,7 @@ const valorBens = () => S.bens.reduce((t, b) => t + b.valor, 0) + S.pertences.re
 const dividaBens = () => S.bens.reduce((t, b) => t + b.parcela * b.anos, 0);
 const dividaEmprestimos = () => S.emprestimos.reduce((t, e) => t + e.parcela * e.anos, 0);
 const totalInv = () => S.inv.poupanca + S.inv.acoes + S.inv.cripto;
-const patrimonio = () => S.dinheiro + totalInv() + valorBens() - dividaBens() - dividaEmprestimos() - S.fies;
+const patrimonio = () => S.dinheiro + totalInv() + valorBens() + (S.negocio ? S.negocio.valor : 0) - dividaBens() - dividaEmprestimos() - S.fies;
 function signo(dia, mes) { return dia >= SIGNOS[mes][0] ? SIGNOS_DEPOIS[mes] : SIGNOS[mes][1]; }
 const enemNota = () => Math.max(300, Math.min(1000, Math.round(330 + S.st.inteligencia * 5.6 + R(-60, 60) + (flag('cursinho') ? 45 : 0))));
 
@@ -149,7 +149,7 @@ function baseVida(o) {
     escola: null, formacao: 'nenhuma', cursos: [], faculdade: null, enem: null,
     emprego: null, bico: null, cargos: [], aposentado: false, pensao: 0, ultimoTrabalho: '',
     moradia: 'pais', bens: [], pertences: [], inv: { poupanca: 0, acoes: 0, cripto: 0 }, plano: false, doencas: [],
-    hab: {}, seguidores: 0, preso: 0, ficha: 0, fies: 0, emprestimos: [], cnh: { carro: false, moto: false }, herdeiro: null, flags: {},
+    hab: {}, redes: {}, negocio: null, seguidores: 0, preso: 0, ficha: 0, fies: 0, emprestimos: [], cnh: { carro: false, moto: false }, herdeiro: null, flags: {},
     rel: [], feitosAno: {}, feitos: [], ultimoEv: {}, fila: [], log: []
   }, o);
 }
@@ -230,7 +230,11 @@ function novaVidaLegado(id) {
 }
 function novaEscola(tipo, rede) {
   rede = rede || (chance(.25) ? 'particular' : 'pública');
-  return { tipo, rede, nome: pick(rede === 'particular' ? ESCOLAS_PART : ESCOLAS_PUB), clubes: [] };
+  return { tipo, rede, nome: pick(rede === 'particular' ? ESCOLAS_PART : ESCOLAS_PUB), clubes: [], profs: novosProfs() };
+}
+function novosProfs() {
+  const ms = MATERIAS.slice().sort(() => Math.random() - .5).slice(0, 4);
+  return ms.map(m => { const p = pessoa('prof', pick(['F', 'F', 'M']), R(25, 60)); p.materia = m; p.rel = R(40, 70); delete p.prof; return p; });
 }
 function avisoEscola() {
   const e = S.escola, fund = e.tipo === 'fundamental';
@@ -248,10 +252,11 @@ const EVENTOS_SISTEMA = [
       { t: 'Virar a noite estudando', fx: s => { mod('saude', -3); s.enem = Math.min(1000, enemNota() + R(-40, 50)); line(`Você chegou com sono, mas tirou ${s.enem} pontos no ENEM.`, s.enem >= 700 ? 'good' : ''); } },
       { t: 'Faltar na prova', fx: s => { s.enem = null; line('Você faltou no ENEM. Dá para fazer de novo no ano que vem.', 'bad'); } }
     ] },
-  { id: 'fimEscola', cat: 'escola', min: 18, max: 18, once: true, interno: true,
-    texto: s => s.enem ? `Você terminou o ensino médio com ${s.enem} pontos no ENEM. E agora?` : 'Você terminou o ensino médio, mas está sem nota do ENEM. E agora?',
+  { id: 'fimEscola', cat: 'escola', min: 18, max: 18, once: true, interno: true, ico: '🎓', titulo: 'Formatura',
+    texto: s => s.enem ? `Você se formou no ensino médio com ${s.enem} pontos no ENEM. O que vai fazer agora?` : 'Você se formou no ensino médio, mas está sem nota do ENEM. O que vai fazer agora?',
     escolhas: s => [
       ...(s.enem ? [{ t: 'Entrar na faculdade', fx: s => s.fila.push({ id: 'curso', d: {} }) }] : []),
+      { t: 'Tirar um ano sabático', fx: () => { mod('felicidade', 6); line('Você tirou um ano para descansar e pensar na vida.'); } },
       { t: `Fazer cursinho e tentar o ENEM de novo (${fmt(preco(6000))})`, fx: s => { grana(-preco(6000)); setFlag('cursinho'); line('Você entrou no cursinho pré-vestibular. O próximo ENEM vai ser melhor.'); } },
       { t: 'Ir trabalhar', fx: () => line('Você decidiu ir direto para o mercado de trabalho.') }
     ] },
@@ -369,6 +374,9 @@ function envelhecerFamilia() {
       r.vivo = false;
       mod('felicidade', -R(['avo', 'tio', 'primo'].includes(r.tipo) ? 3 : 8, ['avo', 'tio', 'primo'].includes(r.tipo) ? 8 : 20));
       line(`${quem(r)} morreu aos ${r.idade} anos.`, 'bad', 'familia');
+      const f = r.sexo === 'F', causa = r.tipo === 'pet' ? pick([`${f ? 'Ela' : 'Ele'} morreu dormindo, em paz.`, `${f ? 'Ela' : 'Ele'} estava velhinh${f ? 'a' : 'o'} e cansad${f ? 'a' : 'o'}.`])
+        : pick(['Morreu dormindo, em paz.', 'Teve um infarto fulminante.', 'Não resistiu a uma pneumonia.', `Partiu cercad${f ? 'a' : 'o'} pela família.`]);
+      aviso('familia', '🕊️', 'Morte', r.tipo === 'pet' ? `${f ? 'A' : 'O'} ${r.raca.toLowerCase()} da família, ${r.nome}, morreu aos ${r.idade} anos. ${causa}` : `${f ? 'Sua' : 'Seu'} ${rotulo(r).toLowerCase()}, ${r.nome}, morreu aos ${r.idade} anos. ${causa}`, null, Object.assign({}, r));
       if ((r.tipo === 'mae' || r.tipo === 'pai') && chance(.5)) { const v = R(5, 80) * 1000; grana(v); line(`Você recebeu ${fmt(v)} de herança.`, '', 'dinheiro'); }
       if (r.tipo === 'avo' && chance(.25)) { const v = R(2, 30) * 1000; grana(v); line(`${r.nome} deixou ${fmt(v)} para você no testamento.`, '', 'dinheiro'); }
     } else if (r.tipo === 'filho' && r.idade === 18) line(`${r.nome} fez 18 anos e saiu de casa.`, '', 'familia');
@@ -378,7 +386,7 @@ function escola() {
   CUR_CAT = 'escola';
   if (S.idade === 6) { S.escola = novaEscola('fundamental'); line(`Você entrou no ensino fundamental, na ${S.escola.nome}.`); avisoEscola(); }
   else if (S.idade === 15 && S.escola && S.escola.tipo === 'fundamental') { S.escola = Object.assign(novaEscola('medio', S.escola.rede), { clubes: S.escola.clubes }); S.formacao = 'fundamental'; line(`Você começou o ensino médio, na ${S.escola.nome}.`); avisoEscola(); }
-  else if (S.idade >= 18 && S.escola && S.escola.tipo === 'medio') { S.escola = null; S.formacao = 'medio'; mod('felicidade', 5); marco('Formatura do ensino médio', 'Você terminou a escola! Teve até festa no clube.'); }
+  else if (S.idade >= 18 && S.escola && S.escola.tipo === 'medio') { S.escola = null; S.formacao = 'medio'; mod('felicidade', 5); line('Você se formou no ensino médio! Teve até festa no clube.', 'good'); }
   if (S.escola) {
     mod('inteligencia', R(0, 3));
     S.escola.clubes.forEach(id => { const c = CLUBES.find(x => x.id === id); if (c.st === 'popularidade') popular(3); else mod(c.st, R(1, 2)); });
@@ -414,6 +422,7 @@ function trabalho() {
     e.anos++;
     e.desemp = clamp(e.desemp + R(-8, 6));
     if (e.id === 'musico') S.seguidores += R(100, 3000);
+    if (e.id === 'militar' && e.desemp > 60 && e.nivel < PATENTES.length - 1 && chance(.35)) { e.nivel++; e.titulo = `${PATENTES[e.nivel]} do Exército`; e.sal = Math.round(e.sal * 1.18); S.ultimoTrabalho = e.titulo; line(`Você foi ${G('promovido', 'promovida')} a ${PATENTES[e.nivel].toLowerCase()}! Salário: ${fmt(e.sal)} por ano.`, 'good'); if (e.nivel === PATENTES.length - 1) setFlag('general'); }
     if (e.id === 'pol') {
       e.mandato--;
       if (e.mandato <= 0) { S.ultimoTrabalho = e.titulo; S.emprego = null; line(`Seu mandato de ${e.titulo.toLowerCase()} terminou. Dá para concorrer de novo em Ocupação › Política.`); }
@@ -424,6 +433,12 @@ function trabalho() {
     else if (e.desemp > 75 && chance(.3)) { e.sal = Math.round(e.sal * 1.12); line(`Seu chefe gostou do seu trabalho e te deu aumento: ${fmt(e.sal)} por ano.`, 'good'); }
     else if (e.desemp < 20 && e.id !== 'servidor' && chance(.45)) { S.ultimoTrabalho = e.titulo; line(`Você foi ${G('demitido', 'demitida')} do emprego de ${e.titulo.toLowerCase()}.`, 'bad'); mod('felicidade', -10); S.emprego = null; }
     if (S.emprego && S.fies > 0) { const p = Math.min(S.fies, Math.round(S.emprego.sal * .1)); S.fies -= p; grana(-p); if (S.fies === 0) line('Você quitou o Fies!', 'good', 'dinheiro'); }
+  }
+  if (S.negocio) {
+    const n = S.negocio, l = Math.round(n.investido * (R(-25, 40) + (S.st.inteligencia - 50) / 4) / 100);
+    n.valor = Math.max(0, Math.round(n.valor * (1 + R(-12, 14) / 100) + l * .3)); grana(l); n.anos++;
+    line(l >= 0 ? `Seu negócio, ${n.nome.toLowerCase()}, deu ${fmt(l)} de lucro.` : `Seu negócio, ${n.nome.toLowerCase()}, deu ${fmt(-l)} de prejuízo.`, l >= 0 ? '' : 'bad', 'dinheiro');
+    if (n.valor > 1e6) setFlag('negocio');
   }
   if (S.seguidores >= 10000) { const v = Math.round(S.seguidores * .5); grana(v); if (v > 20000) line(`As redes sociais renderam ${fmt(v)} em publicidade.`, '', 'fama'); }
   CUR_CAT = null;
@@ -543,6 +558,8 @@ const CONQUISTAS = [
   { id: 'politico', nome: 'Voto de confiança', desc: 'Ganhar uma eleição', ok: () => S.cargos.length > 0 || (S.emprego && S.emprego.id === 'pol') },
   { id: 'presidente', nome: 'Faixa presidencial', desc: 'Ser eleito presidente', ok: () => flag('presidente') },
   { id: 'reservista', nome: 'Sentido!', desc: 'Servir o Exército', ok: () => flag('reservista') },
+  { id: 'general', nome: 'Cinco estrelas', desc: 'Chegar a general do Exército', ok: () => flag('general') },
+  { id: 'verificado', nome: 'Selo azul', desc: 'Conta verificada numa rede social', ok: () => flag('verificado') },
   { id: 'empreendedor', nome: 'Empreendedor', desc: 'Abrir um negócio de sucesso', ok: () => flag('negocio') },
   { id: 'casaPropria', nome: 'Casa própria', desc: 'Comprar um imóvel', ok: () => flag('imovel') },
   { id: 'sortudo', nome: 'Sortudo', desc: 'Ganhar na Mega-Sena', ok: () => flag('mega') },
